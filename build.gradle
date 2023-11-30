@@ -1,0 +1,124 @@
+version = '0.2.0-SNAPSHOT'
+
+buildscript {
+    repositories {
+        mavenLocal()
+        jcenter()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }    
+    }
+}
+
+['java', 'distribution', 'maven'].each {
+    apply plugin: it
+}
+import org.gradle.util.VersionNumber
+
+sourceCompatibility = '1.8'
+
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+ext {
+    binedVersion = '0.2.1-SNAPSHOT'
+    pagedDataVersion = '0.2.1-SNAPSHOT'
+}
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+    doFirst {
+        options.fork = true
+        if (JavaVersion.current() == JavaVersion.VERSION_1_8) {
+            if (VersionNumber.parse(gradle.gradleVersion) >= VersionNumber.parse('5.0')) {
+                options.bootstrapClasspath = files("${System.properties['java.home']}/lib/rt.jar", "$File.pathSeparator${System.properties['java.home']}/jre/lib/jsse.jar")
+            } else {
+                options.bootClasspath = "${System.properties['java.home']}/lib/rt.jar"
+                options.bootClasspath += "$File.pathSeparator${System.properties['java.home']}/jre/lib/jsse.jar"
+            }
+        }
+    }
+}
+
+// Disable tests on build
+if (!gradle.startParameter.taskNames.any {it.endsWith("test")}) {
+    tasks.withType(Test) {enabled = false}
+}
+
+task testJar(type: Jar, dependsOn: testClasses) {
+    classifier "tests"
+    archiveBaseName = "test-${project.archivesBaseName}"
+    from sourceSets.test.output
+}
+
+configurations {
+    tests
+}
+
+artifacts {
+    tests testJar
+}
+
+task sourceJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.java
+}
+
+javadoc {
+    if (JavaVersion.current() != JavaVersion.VERSION_1_8) {
+        options.addBooleanOption('html5', true)
+    }
+}
+
+task javadocJar (type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+if (!hasProperty('mainClass')) {
+    ext.mainClass = 'org.exbin.bined.bluej.BinEdExtension'
+}
+
+repositories {
+    mavenCentral()
+    flatDir {
+        dirs "lib"
+    }
+}
+
+def binedLibrary = { String libName ->
+    return ":${libName}-${binedVersion}"
+//    return "org.exbin.bined:${libName}:${binedVersion}"
+}
+
+def pagedDataLibrary = { String libName ->
+    return ":${libName}-${pagedDataVersion}"
+//    return "org.exbin.auxiliary:${libName}:${pagedDataVersion}"
+}
+
+dependencies {
+    compile binedLibrary('bined-core')
+    compile binedLibrary('bined-extended')
+    compile binedLibrary('bined-highlight-swing')
+    compile binedLibrary('bined-operation')
+    compile binedLibrary('bined-operation-swing')
+    compile binedLibrary('bined-swing')
+    compile binedLibrary('bined-swing-extended')
+    compile pagedDataLibrary('paged_data')
+    compile pagedDataLibrary('paged_data-delta')
+
+    implementation 'com.google.code.findbugs:jsr305:3.0.2'
+    implementation group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.70'
+
+    testCompile group : 'junit', name: 'junit', version: '4.10'
+}
+
+jar {
+    manifest {
+        attributes(
+            'Main-Class': mainClass
+        )
+    }
+
+//    from configurations.compile.findAll { it.name != 'bluejext.jar' }.collect { it.isDirectory() ? it : zipTree(it) }
+//    destinationDir = file("$buildDir")
+}

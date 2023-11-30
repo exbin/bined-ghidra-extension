@@ -1,0 +1,11 @@
+.gradle
+.nb-gradle
+.nb-gradle-properties
+/deps/*
+!/deps/dependency.txt
+!/deps/*.gradle
+build/
+target/
+/release
+*~
+/resources/private/
