@@ -15,25 +15,124 @@
  */
 package org.exbin.bined.ghidra;
 
+import ghidra.app.events.ProgramActivatedPluginEvent;
+import ghidra.app.events.ProgramClosedPluginEvent;
+import ghidra.app.events.ProgramHighlightPluginEvent;
+import ghidra.app.events.ProgramLocationPluginEvent;
+import ghidra.app.events.ProgramSelectionPluginEvent;
+import ghidra.app.plugin.PluginCategoryNames;
+import ghidra.app.plugin.core.byteviewer.ByteBlockChangePluginEvent;
+import ghidra.app.services.ClipboardService;
+import ghidra.app.services.GoToService;
+import ghidra.app.services.NavigationHistoryService;
+import ghidra.app.services.ProgramManager;
+import ghidra.framework.plugintool.PluginEvent;
+import ghidra.framework.plugintool.PluginInfo;
+import ghidra.framework.plugintool.PluginTool;
+import ghidra.framework.plugintool.util.PluginStatus;
+import ghidra.program.model.listing.Program;
+import ghidra.program.util.ProgramSelection;
+import ghidra.util.SystemUtilities;
+import java.util.Iterator;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
- * Drop down button.
+ * BinEd plugin for Ghidra SRE.
  *
  * @author ExBin Project (https://exbin.org)
  */
-/*
-@PluginInfo(status = PluginStatus.RELEASED, packageName = CorePluginPackage.NAME, category = PluginCategoryNames.BYTE_VIEWER, shortDescription = "Viewer / editor for binary data", description = "Viewer / editor for binary data using BinEd library",
-    servicesRequired = {
-		ProgramManager.class, GoToService.class, NavigationHistoryService.class,
-		ClipboardService.class, }, eventsConsumed = { ProgramLocationPluginEvent.class,
-			ProgramActivatedPluginEvent.class, ProgramSelectionPluginEvent.class,
-			ProgramHighlightPluginEvent.class, ProgramClosedPluginEvent.class,
-			ByteBlockChangePluginEvent.class, }, eventsProduced = {
-				ProgramLocationPluginEvent.class, ProgramSelectionPluginEvent.class,
-                ByteBlockChangePluginEvent.class, })
-*/
+@PluginInfo(status = PluginStatus.RELEASED, packageName = "ExBin Project", category = PluginCategoryNames.BYTE_VIEWER, shortDescription = "Viewer / editor for binary data", description = "Viewer / editor for binary data using BinEd library",
+        servicesRequired = {
+            ProgramManager.class, GoToService.class, NavigationHistoryService.class,
+            ClipboardService.class,}, eventsConsumed = {ProgramLocationPluginEvent.class,
+            ProgramActivatedPluginEvent.class, ProgramSelectionPluginEvent.class,
+            ProgramHighlightPluginEvent.class, ProgramClosedPluginEvent.class,
+            ByteBlockChangePluginEvent.class,}, eventsProduced = {
+            ProgramLocationPluginEvent.class, ProgramSelectionPluginEvent.class,
+            ByteBlockChangePluginEvent.class,})
 @ParametersAreNonnullByDefault
-public class BinedPlugin { // extends AbstractByteViewerPlugin<ProgramByteViewerComponentProvider>
-    
+public class BinedPlugin extends AbstractByteViewerPlugin<ProgramByteViewerComponentProvider> {
+
+    public BinedPlugin(PluginTool tool) {
+        super(tool);
+    }
+
+    @Override
+    protected ProgramByteViewerComponentProvider createProvider(boolean isConnected) {
+        return new ProgramByteViewerComponentProvider(tool, this, isConnected);
+    }
+
+    @Override
+    public void processEvent(PluginEvent event) {
+        if (event instanceof ProgramClosedPluginEvent) {
+            Program program = ((ProgramClosedPluginEvent) event).getProgram();
+            programClosed(program);
+            return;
+        }
+
+        if (event instanceof ProgramActivatedPluginEvent) {
+            currentProgram = ((ProgramActivatedPluginEvent) event).getActiveProgram();
+            currentLocation = null;
+        } else if (event instanceof ProgramLocationPluginEvent) {
+            currentLocation = ((ProgramLocationPluginEvent) event).getLocation();
+        }
+
+        connectedProvider.doHandleEvent(event);
+    }
+
+    void programClosed(Program closedProgram) {
+        Iterator<ProgramByteViewerComponentProvider> iterator = disconnectedProviders.iterator();
+        while (iterator.hasNext()) {
+            ProgramByteViewerComponentProvider provider = iterator.next();
+            if (provider.getProgram() == closedProgram) {
+                iterator.remove();
+                removeProvider(provider);
+            }
+        }
+    }
+
+    @Override
+    public void updateLocation(ProgramByteViewerComponentProvider provider,
+            ProgramLocationPluginEvent event, boolean export) {
+
+        if (eventsDisabled()) {
+            return;
+        }
+
+        if (provider == connectedProvider) {
+            fireProgramLocationPluginEvent(provider, event);
+        } else if (export) {
+            exportLocation(provider.getProgram(), event.getLocation());
+        }
+    }
+
+    @Override
+    public void fireProgramLocationPluginEvent(ProgramByteViewerComponentProvider provider,
+            ProgramLocationPluginEvent event) {
+
+        if (SystemUtilities.isEqual(event.getLocation(), currentLocation)) {
+            return;
+        }
+
+        currentLocation = event.getLocation();
+        if (provider == connectedProvider) {
+            firePluginEvent(event);
+        }
+    }
+
+    @Override
+    public void updateSelection(ByteViewerComponentProvider provider,
+            ProgramSelectionPluginEvent event, Program program) {
+        if (provider == connectedProvider) {
+            firePluginEvent(event);
+        }
+    }
+
+    @Override
+    public void highlightChanged(ByteViewerComponentProvider provider, ProgramSelection highlight) {
+        if (provider == connectedProvider) {
+            tool.firePluginEvent(new ProgramHighlightPluginEvent(getName(), highlight,
+                    connectedProvider.getProgram()));
+        }
+    }
 }

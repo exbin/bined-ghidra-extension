@@ -1,5 +1,3 @@
-version = '0.2.0-SNAPSHOT'
-
 buildscript {
     repositories {
         mavenLocal()
@@ -10,12 +8,15 @@ buildscript {
     }
 }
 
-['java', 'distribution', 'maven'].each {
-    apply plugin: it
+plugins {
+	id 'java'
+	id 'distribution'
 }
 import org.gradle.util.VersionNumber
 
-sourceCompatibility = '1.8'
+version = '0.2.0-SNAPSHOT'
+
+sourceCompatibility = '17'
 
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
@@ -45,7 +46,7 @@ if (!gradle.startParameter.taskNames.any {it.endsWith("test")}) {
 }
 
 task testJar(type: Jar, dependsOn: testClasses) {
-    classifier "tests"
+    archiveClassifier = "tests"
     archiveBaseName = "test-${project.archivesBaseName}"
     from sourceSets.test.output
 }
@@ -59,7 +60,7 @@ artifacts {
 }
 
 task sourceJar(type: Jar) {
-    classifier = 'sources'
+    archiveClassifier = 'sources'
     from sourceSets.main.java
 }
 
@@ -70,20 +71,19 @@ javadoc {
 }
 
 task javadocJar (type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
+    archiveClassifier = 'javadoc'
     from javadoc.destinationDir
 }
 
 if (!hasProperty('mainClass')) {
-    ext.mainClass = 'org.exbin.bined.bluej.BinEdExtension'
+    ext.mainClass = 'org.exbin.bined.ghidra.GhidraExtension'
 }
 
-repositories {
-    mavenCentral()
-    flatDir {
-        dirs "lib"
-    }
+task buildPack (type: Zip, dependsOn: Jar) {
+    archiveBaseName = "bined-ghidra-extension-${version}"
+	
 }
+// publish.dependsOn buildPack
 
 def binedLibrary = { String libName ->
     return ":${libName}-${binedVersion}"
@@ -95,21 +95,38 @@ def pagedDataLibrary = { String libName ->
 //    return "org.exbin.auxiliary:${libName}:${pagedDataVersion}"
 }
 
+repositories {
+    mavenCentral()
+    flatDir {
+        dirs "lib"
+    }
+}
+
 dependencies {
-    compile binedLibrary('bined-core')
-    compile binedLibrary('bined-extended')
-    compile binedLibrary('bined-highlight-swing')
-    compile binedLibrary('bined-operation')
-    compile binedLibrary('bined-operation-swing')
-    compile binedLibrary('bined-swing')
-    compile binedLibrary('bined-swing-extended')
-    compile pagedDataLibrary('paged_data')
-    compile pagedDataLibrary('paged_data-delta')
+    compileOnly ':ghidra-project'
+    compileOnly ':ghidra-base'
+    compileOnly ':ghidra-generic'
+    compileOnly ':ghidra-gui'
+    compileOnly ':ghidra-docking'
+    compileOnly ':ghidra-help'
+    compileOnly ':ghidra-softwaremodeling'
+    compileOnly ':ghidra-utility'
+
+    implementation binedLibrary('bined-core')
+    implementation binedLibrary('bined-extended')
+    implementation binedLibrary('bined-highlight-swing')
+    implementation binedLibrary('bined-operation')
+    implementation binedLibrary('bined-operation-swing')
+    implementation binedLibrary('bined-swing')
+    implementation binedLibrary('bined-swing-extended')
+    implementation pagedDataLibrary('paged_data')
+    implementation pagedDataLibrary('paged_data-delta')
 
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
     implementation group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.70'
+    implementation "org.jdom:jdom-legacy:1.1.3"
 
-    testCompile group : 'junit', name: 'junit', version: '4.10'
+    testImplementation group : 'junit', name: 'junit', version: '4.10'
 }
 
 jar {
