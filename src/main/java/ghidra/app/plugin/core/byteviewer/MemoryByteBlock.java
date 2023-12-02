@@ -43,7 +43,7 @@ public class MemoryByteBlock implements ByteBlock {
 	 * @param memory memory from a program
 	 * @param block block from memory
 	 */
-	protected MemoryByteBlock(Program program, Memory memory, MemoryBlock block) {
+	public MemoryByteBlock(Program program, Memory memory, MemoryBlock block) {
 		this.program = program;
 		this.memory = memory;
 		this.block = block;

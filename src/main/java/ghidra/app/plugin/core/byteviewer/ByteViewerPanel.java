@@ -979,7 +979,7 @@ public class ByteViewerPanel extends JPanel
 	 * 
 	 * @param message non-html text to display
 	 */
-	void setStatusMessage(String message) {
+	public void setStatusMessage(String message) {
 		provider.setStatusMessage(message);
 	}
 

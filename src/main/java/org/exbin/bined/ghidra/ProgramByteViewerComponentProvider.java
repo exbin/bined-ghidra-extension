@@ -28,10 +28,9 @@ import docking.widgets.fieldpanel.support.ViewerPosition;
 import generic.theme.GIcon;
 import ghidra.app.events.*;
 import ghidra.app.nav.*;
-import ghidra.app.plugin.core.byteviewer.ByteBlockChangeManager;
-import ghidra.app.plugin.core.byteviewer.ByteViewerActionContext;
-import ghidra.app.plugin.core.byteviewer.ByteViewerClipboardProvider;
-import ghidra.app.plugin.core.byteviewer.ProgramByteBlockSet;
+import ghidra.app.plugin.core.byteviewer.ByteBlockChangePluginEvent;
+import ghidra.app.plugin.core.byteviewer.ByteViewerLocationMemento;
+import ghidra.app.plugin.core.byteviewer.ByteViewerState;
 import ghidra.app.plugin.core.format.*;
 import ghidra.app.services.ClipboardService;
 import ghidra.app.services.ProgramManager;
@@ -124,7 +123,7 @@ public class ProgramByteViewerComponentProvider extends ByteViewerComponentProvi
 
 	@Override
 	public void componentShown() {
-		panel.refreshView();
+		// panel.refreshView();
 
 		if (currentLocation != null) {
 			setLocation(currentLocation);
@@ -136,7 +135,7 @@ public class ProgramByteViewerComponentProvider extends ByteViewerComponentProvi
 
 	@Override
 	public ActionContext getActionContext(MouseEvent event) {
-		ByteBlockInfo info = panel.getCursorLocation();
+		ByteBlockInfo info = null; // panel.getCursorLocation();
 		if (info == null) {
 			return null;
 		}
@@ -187,7 +186,7 @@ public class ProgramByteViewerComponentProvider extends ByteViewerComponentProvi
 		ByteBlockSelection blockSelection = blockSet.getBlockSelection(selection);
 		clipboardProvider.setSelection(currentSelection);
 
-		panel.setViewerSelection(blockSelection);
+//		panel.setViewerSelection(blockSelection);
 
 		if (notify) {
 			ProgramSelectionPluginEvent selectionEvent =
@@ -214,7 +213,7 @@ public class ProgramByteViewerComponentProvider extends ByteViewerComponentProvi
 		}
 
 		ByteBlockSelection highlight = blockSet.getBlockSelection(currentHighlight);
-		panel.setViewerHighlight(highlight);
+//		panel.setViewerHighlight(highlight);
 		contextChanged();
 		plugin.highlightChanged(this, newHighlight);
 
@@ -225,7 +224,7 @@ public class ProgramByteViewerComponentProvider extends ByteViewerComponentProvi
 	}
 
 	protected void doSetProgram(Program newProgram) {
-		setOptionsAction.setEnabled(newProgram != null);
+//		setOptionsAction.setEnabled(newProgram != null);
 		cloneByteViewerAction.setEnabled(newProgram != null);
 
 		if (program != null) {
@@ -234,12 +233,12 @@ public class ProgramByteViewerComponentProvider extends ByteViewerComponentProvi
 
 		program = newProgram;
 		clipboardProvider.setProgram(newProgram);
-		for (ByteViewerComponent byteViewerComponent : viewMap.values()) {
-			DataFormatModel dataModel = byteViewerComponent.getDataModel();
-			if (dataModel instanceof ProgramDataFormatModel) {
-				((ProgramDataFormatModel) dataModel).setProgram(newProgram);
-			}
-		}
+//		for (ByteViewerComponent byteViewerComponent : viewMap.values()) {
+//			DataFormatModel dataModel = byteViewerComponent.getDataModel();
+//			if (dataModel instanceof ProgramDataFormatModel) {
+//				((ProgramDataFormatModel) dataModel).setProgram(newProgram);
+//			}
+//		}
 
 		if (newProgram != null) {
 			newProgram.addListener(this);
@@ -291,7 +290,7 @@ public class ProgramByteViewerComponentProvider extends ByteViewerComponentProvi
 
 	@Override
 	public LocationMemento getMemento() {
-		ByteBlockInfo info = panel.getCursorLocation();
+		ByteBlockInfo info = null; // panel.getCursorLocation();
 		int blockNumber = -1;
 		BigInteger blockOffset = null;
 		int column = 0;
@@ -302,7 +301,7 @@ public class ProgramByteViewerComponentProvider extends ByteViewerComponentProvi
 			column = info.getColumn();
 		}
 
-		ViewerPosition vp = panel.getViewerPosition();
+		ViewerPosition vp = new ViewerPosition(0, 0, 0); // panel.getViewerPosition();
 		return new ByteViewerLocationMemento(program, currentLocation, blockNumber, blockOffset,
 			column, vp);
 	}
@@ -320,7 +319,7 @@ public class ProgramByteViewerComponentProvider extends ByteViewerComponentProvi
 		if (blocks != null && blockNumber >= 0 && blockNumber < blocks.length) {
 			ByteViewerState view = new ByteViewerState(blockSet,
 				new ByteBlockInfo(blocks[blockNumber], blockOffset, column), vp);
-			panel.restoreView(view);
+			// panel.restoreView(view);
 		}
 
 	}
@@ -365,7 +364,7 @@ public class ProgramByteViewerComponentProvider extends ByteViewerComponentProvi
 
 	@Override
 	public void requestFocus() {
-		panel.getCurrentComponent().requestFocus();
+		// panel.getCurrentComponent().requestFocus();
 		tool.toFront(this);
 	}
 
@@ -412,7 +411,7 @@ public class ProgramByteViewerComponentProvider extends ByteViewerComponentProvi
 			column = location.getCharOffset();
 		}
 
-		panel.setCursorLocation(block, blockOffset, column);
+		// panel.setCursorLocation(block, blockOffset, column);
 		Address blockSetAddress = blockSet.getAddress(block, blockOffset);
 		if (blockSetAddress == null) {
 			return; // this can happen during an undo
@@ -531,7 +530,7 @@ public class ProgramByteViewerComponentProvider extends ByteViewerComponentProvi
 	 * @return the text
 	 */
 	String getCurrentTextSelection() {
-		return panel.getCurrentComponent().getTextForSelection();
+		return ""; // panel.getCurrentComponent().getTextForSelection();
 	}
 
 	@Override
@@ -587,7 +586,7 @@ public class ProgramByteViewerComponentProvider extends ByteViewerComponentProvi
 		}
 
 		blockSet = newByteBlockSet(changeManager);
-		panel.setByteBlocks(blockSet);
+		// panel.setByteBlocks(blockSet);
 	}
 
 	@Override
@@ -631,7 +630,7 @@ public class ProgramByteViewerComponentProvider extends ByteViewerComponentProvi
 		if (blocks != null && blockNumber >= 0 && blockNumber < blocks.length) {
 			ByteViewerState view = new ByteViewerState(blockSet,
 				new ByteBlockInfo(blocks[blockNumber], blockOffset, column), vp);
-			panel.restoreView(view);
+//			panel.restoreView(view);
 		}
 	}
 
@@ -639,7 +638,7 @@ public class ProgramByteViewerComponentProvider extends ByteViewerComponentProvi
 		if (program != domainObject || blockSet == null) {
 			return null;
 		}
-		return blockSet.getUndoRedoState();
+		return null; // blockSet.getUndoRedoState();
 	}
 
 	void restoreUndoRedoState(DomainObject domainObject, Object state) {
@@ -652,7 +651,7 @@ public class ProgramByteViewerComponentProvider extends ByteViewerComponentProvi
 
 	protected void writeDataState(SaveState saveState) {
 		saveState.putLong("NAV_ID", getInstanceID());
-		ByteBlockInfo info = panel.getCursorLocation();
+		ByteBlockInfo info = null; // panel.getCursorLocation();
 		int blockNumber = -1;
 		String blockOffset = "0";
 		int column = 0;
@@ -666,10 +665,10 @@ public class ProgramByteViewerComponentProvider extends ByteViewerComponentProvi
 		saveState.putString(BLOCK_OFFSET, blockOffset);
 		saveState.putInt(BLOCK_COLUMN, column);
 
-		ViewerPosition vp = panel.getViewerPosition();
-		saveState.putInt(INDEX, vp.getIndexAsInt());
-		saveState.putInt(X_OFFSET, vp.getXOffset());
-		saveState.putInt(Y_OFFSET, vp.getYOffset());
+//		ViewerPosition vp = panel.getViewerPosition();
+//		saveState.putInt(INDEX, vp.getIndexAsInt());
+//		saveState.putInt(X_OFFSET, vp.getXOffset());
+//		saveState.putInt(Y_OFFSET, vp.getYOffset());
 
 	}
 
@@ -735,8 +734,8 @@ public class ProgramByteViewerComponentProvider extends ByteViewerComponentProvi
 		newProvider.setLocation(currentLocation);
 		newProvider.setSelection(currentSelection, false);
 		newProvider.setHighlight(currentHighlight);
-		ViewerPosition viewerPosition = panel.getViewerPosition();
-		newProvider.panel.setViewerPosition(viewerPosition);
+		// ViewerPosition viewerPosition = panel.getViewerPosition();
+		// newProvider.panel.setViewerPosition(viewerPosition);
 	}
 
 //==================================================================================================

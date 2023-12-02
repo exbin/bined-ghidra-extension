@@ -51,9 +51,9 @@ import javax.annotation.ParametersAreNonnullByDefault;
             ProgramLocationPluginEvent.class, ProgramSelectionPluginEvent.class,
             ByteBlockChangePluginEvent.class,})
 @ParametersAreNonnullByDefault
-public class BinedPlugin extends AbstractByteViewerPlugin<ProgramByteViewerComponentProvider> {
+public class BinedExtensionPlugin extends AbstractByteViewerPlugin<ProgramByteViewerComponentProvider> {
 
-    public BinedPlugin(PluginTool tool) {
+    public BinedExtensionPlugin(PluginTool tool) {
         super(tool);
     }
 

@@ -70,7 +70,7 @@ public class ByteViewerLayoutModel implements LayoutModel {
 		layoutChanged();
 	}
 
-	void setIndexMap(IndexMap indexMap) {
+	public void setIndexMap(IndexMap indexMap) {
 		if (indexMap == this.indexMap) {
 			return;
 		}

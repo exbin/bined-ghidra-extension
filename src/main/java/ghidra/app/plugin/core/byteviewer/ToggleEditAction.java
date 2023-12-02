@@ -23,7 +23,7 @@ import docking.action.*;
 import generic.theme.GIcon;
 import ghidra.framework.plugintool.Plugin;
 
-class ToggleEditAction extends ToggleDockingAction {
+public class ToggleEditAction extends ToggleDockingAction {
 	private final ByteViewerComponentProvider provider;
 
 	public ToggleEditAction(ByteViewerComponentProvider provider, Plugin plugin) {

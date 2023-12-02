@@ -27,14 +27,14 @@ import ghidra.program.util.ProgramLocation;
 /**
  * Implementation for a snapshot of the the byte viewer's current view.
  */
-class ByteViewerState {
+public class ByteViewerState {
 
 	private ViewerPosition vp;
 	private ByteBlock block;
 	private BigInteger offset;
 	private Address addr; // null if a program is not in view
 
-	ByteViewerState(ByteBlockSet blockSet, ByteBlockInfo info, ViewerPosition vp) {
+	public ByteViewerState(ByteBlockSet blockSet, ByteBlockInfo info, ViewerPosition vp) {
 		block = info.getBlock();
 		offset = info.getOffset();
 		this.vp = vp;
@@ -72,21 +72,21 @@ class ByteViewerState {
 	/**
 	 * Get the view position for the current component.
 	 */
-	ViewerPosition getViewerPosition() {
+	public ViewerPosition getViewerPosition() {
 		return vp;
 	}
 
 	/**
 	 * Get the block.
 	 */
-	ByteBlock getBlock() {
+	public ByteBlock getBlock() {
 		return block;
 	}
 
 	/**
 	 * Get the offset into the block.
 	 */
-	BigInteger getOffset() {
+	public BigInteger getOffset() {
 		return offset;
 	}
 }

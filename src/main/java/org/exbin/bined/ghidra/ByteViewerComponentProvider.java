@@ -29,7 +29,7 @@ import generic.theme.*;
 import ghidra.GhidraOptions;
 import ghidra.GhidraOptions.CURSOR_MOUSE_BUTTON_NAMES;
 import ghidra.app.plugin.core.byteviewer.ByteViewerPanel;
-import ghidra.app.plugin.core.byteviewer.ProgramByteBlockSet;
+import ghidra.app.plugin.core.byteviewer.ToggleEditAction;
 import ghidra.app.plugin.core.format.*;
 import ghidra.app.services.MarkerService;
 import ghidra.app.util.viewer.listingpanel.AddressSetDisplayListener;
@@ -39,6 +39,7 @@ import ghidra.framework.plugintool.PluginTool;
 import ghidra.util.*;
 import ghidra.util.classfinder.ClassSearcher;
 import ghidra.util.task.SwingUpdateManager;
+import org.exbin.bined.ghidra.gui.BinEdComponentPanel;
 
 public abstract class ByteViewerComponentProvider extends ComponentProviderAdapter
 		implements OptionsChangeListener {
@@ -87,7 +88,7 @@ public abstract class ByteViewerComponentProvider extends ComponentProviderAdapt
 	private static final String OPTION_HIGHLIGHT_CURSOR_LINE =
 		GhidraOptions.HIGHLIGHT_CURSOR_LINE_OPTION_NAME;
 
-	protected ByteViewerPanel panel;
+	protected BinEdComponentPanel panel;
 
 	private int bytesPerLine;
 	private int offset;
@@ -114,7 +115,7 @@ public abstract class ByteViewerComponentProvider extends ComponentProviderAdapt
 
 		initializedDataFormatModelClassMap();
 
-		panel = newByteViewerPanel();
+		panel = new BinEdComponentPanel();
 		bytesPerLine = DEFAULT_BYTES_PER_LINE;
 		setIcon(new GIcon("icon.plugin.byteviewer.provider"));
 		setOptions();
@@ -127,10 +128,6 @@ public abstract class ByteViewerComponentProvider extends ComponentProviderAdapt
 		setWindowMenuGroup("Byte Viewer");
 	}
 
-	protected ByteViewerPanel newByteViewerPanel() {
-		return new ByteViewerPanel(this);
-	}
-
 	private void initializedDataFormatModelClassMap() {
 		dataFormatModelClassMap = new HashMap<>();
 		Set<? extends DataFormatModel> models = getDataFormatModels();
@@ -140,11 +137,11 @@ public abstract class ByteViewerComponentProvider extends ComponentProviderAdapt
 	}
 
 	private void createActions() {
-		editModeAction = new ToggleEditAction(this, plugin);
-		setOptionsAction = new OptionsAction(this, plugin);
+//		editModeAction = new ToggleEditAction(this, plugin);
+//		setOptionsAction = new OptionsAction(this, plugin);
 
-		addLocalAction(editModeAction);
-		addLocalAction(setOptionsAction);
+//		addLocalAction(editModeAction);
+//		addLocalAction(setOptionsAction);
 	}
 
 	@Override
@@ -180,17 +177,17 @@ public abstract class ByteViewerComponentProvider extends ComponentProviderAdapt
 		else if (options.getName().equals(CATEGORY_BROWSER_FIELDS)) {
 			if (optionName.equals(CURSOR_HIGHLIGHT_BUTTON_NAME)) {
 				CURSOR_MOUSE_BUTTON_NAMES mouseButton = (CURSOR_MOUSE_BUTTON_NAMES) newValue;
-				panel.setHighlightButton(mouseButton.getMouseEventID());
+//				panel.setHighlightButton(mouseButton.getMouseEventID());
 			}
 			else if (optionName.equals(HIGHLIGHT_COLOR_NAME)) {
-				panel.setMouseButtonHighlightColor((Color) newValue);
+//				panel.setMouseButtonHighlightColor((Color) newValue);
 			}
 		}
 	}
 
 	private void setFont(Font font) {
 		FontMetrics fm = panel.getFontMetrics(font);
-		panel.setFontMetrics(fm);
+//		panel.setFontMetrics(fm);
 		tool.setConfigChanged(true);
 	}
 
@@ -227,29 +224,29 @@ public abstract class ByteViewerComponentProvider extends ComponentProviderAdapt
 		opt.registerOption(OPTION_HIGHLIGHT_CURSOR_LINE, true, help,
 			"Toggles highlighting background color of line containing the cursor");
 
-		Color separatorColor = opt.getColor(SEPARATOR_COLOR_OPTION_NAME, SEPARATOR_COLOR);
-		panel.setSeparatorColor(separatorColor);
-
-		panel.setCurrentCursorColor(CURSOR_ACTIVE_COLOR);
-		panel.setNonFocusCursorColor(CURSOR_NOT_FOCUSED_COLOR);
-		panel.setCursorColor(CURSOR_NON_ACTIVE_COLOR);
-		panel.setCurrentCursorLineColor(CURRENT_LINE_COLOR);
-
-		Font font = Gui.getFont(DEFAULT_FONT_ID);
-		FontMetrics fm = panel.getFontMetrics(font);
-
-		panel.restoreConfigState(fm, CHANGED_VALUE_COLOR);
-
-		opt.addOptionsChangeListener(this);
-
-		// cursor highlight options
-		opt = tool.getOptions(CATEGORY_BROWSER_FIELDS);
-		GhidraOptions.CURSOR_MOUSE_BUTTON_NAMES mouseButton = opt.getEnum(
-			CURSOR_HIGHLIGHT_BUTTON_NAME, GhidraOptions.CURSOR_MOUSE_BUTTON_NAMES.MIDDLE);
-		panel.setHighlightButton(mouseButton.getMouseEventID());
-
-		panel.setMouseButtonHighlightColor(
-			opt.getColor(HIGHLIGHT_COLOR_NAME, DEFAULT_HIGHLIGHT_COLOR));
+//		Color separatorColor = opt.getColor(SEPARATOR_COLOR_OPTION_NAME, SEPARATOR_COLOR);
+//		panel.setSeparatorColor(separatorColor);
+//
+//		panel.setCurrentCursorColor(CURSOR_ACTIVE_COLOR);
+//		panel.setNonFocusCursorColor(CURSOR_NOT_FOCUSED_COLOR);
+//		panel.setCursorColor(CURSOR_NON_ACTIVE_COLOR);
+//		panel.setCurrentCursorLineColor(CURRENT_LINE_COLOR);
+//
+//		Font font = Gui.getFont(DEFAULT_FONT_ID);
+//		FontMetrics fm = panel.getFontMetrics(font);
+//
+//		panel.restoreConfigState(fm, CHANGED_VALUE_COLOR);
+//
+//		opt.addOptionsChangeListener(this);
+//
+//		// cursor highlight options
+//		opt = tool.getOptions(CATEGORY_BROWSER_FIELDS);
+//		GhidraOptions.CURSOR_MOUSE_BUTTON_NAMES mouseButton = opt.getEnum(
+//			CURSOR_HIGHLIGHT_BUTTON_NAME, GhidraOptions.CURSOR_MOUSE_BUTTON_NAMES.MIDDLE);
+//		panel.setHighlightButton(mouseButton.getMouseEventID());
+//
+//		panel.setMouseButtonHighlightColor(
+//			opt.getColor(HIGHLIGHT_COLOR_NAME, DEFAULT_HIGHLIGHT_COLOR));
 
 		opt.addOptionsChangeListener(this);
 	}
@@ -267,20 +264,22 @@ public abstract class ByteViewerComponentProvider extends ComponentProviderAdapt
 			newOffset = newOffset % bytesPerLine;
 		}
 		this.offset = newOffset;
-		panel.setOffset(newOffset);
+//		panel.setOffset(newOffset);
 		tool.setConfigChanged(true);
 	}
 
 	ByteBlockInfo getCursorLocation() {
-		return panel.getCursorLocation();
+        throw new UnsupportedOperationException("Not supported yet.");
+//		return panel.getCursorLocation();
 	}
 
 	ByteBlockSelection getBlockSelection() {
-		return panel.getViewerSelection();
+        throw new UnsupportedOperationException("Not supported yet.");
+//		return panel.getViewerSelection();
 	}
 
 	void setBlockSelection(ByteBlockSelection selection) {
-		panel.setViewerSelection(selection);
+//		panel.setViewerSelection(selection);
 	}
 
 	ByteBlockSet getByteBlockSet() {
@@ -318,8 +317,8 @@ public abstract class ByteViewerComponentProvider extends ComponentProviderAdapt
 		hexGroupSize = groupSize;
 		ByteViewerComponent component = viewMap.get(HexFormatModel.NAME);
 		if (component != null) {
-			component.setGroupSize(groupSize);
-			component.invalidate();
+//			component.setGroupSize(groupSize);
+//			component.invalidate();
 			panel.repaint();
 		}
 		tool.setConfigChanged(true);
@@ -328,17 +327,17 @@ public abstract class ByteViewerComponentProvider extends ComponentProviderAdapt
 	void setBytesPerLine(int bytesPerLine) {
 		if (this.bytesPerLine != bytesPerLine) {
 			this.bytesPerLine = bytesPerLine;
-			panel.setBytesPerLine(bytesPerLine);
+//			panel.setBytesPerLine(bytesPerLine);
 			tool.setConfigChanged(true);
 		}
 	}
 
 	protected void writeConfigState(SaveState saveState) {
-		DataModelInfo info = panel.getDataModelInfo();
-		saveState.putStrings(VIEW_NAMES, info.getNames());
-		saveState.putInt(HEX_VIEW_GROUPSIZE, hexGroupSize);
-		saveState.putInt(BYTES_PER_LINE_NAME, bytesPerLine);
-		saveState.putInt(OFFSET_NAME, offset);
+//		DataModelInfo info = panel.getDataModelInfo();
+//		saveState.putStrings(VIEW_NAMES, info.getNames());
+//		saveState.putInt(HEX_VIEW_GROUPSIZE, hexGroupSize);
+//		saveState.putInt(BYTES_PER_LINE_NAME, bytesPerLine);
+//		saveState.putInt(OFFSET_NAME, offset);
 	}
 
 	protected void readConfigState(SaveState saveState) {
@@ -347,7 +346,7 @@ public abstract class ByteViewerComponentProvider extends ComponentProviderAdapt
 		restoreViews(names, false);
 		bytesPerLine = saveState.getInt(BYTES_PER_LINE_NAME, DEFAULT_BYTES_PER_LINE);
 		offset = saveState.getInt(OFFSET_NAME, 0);
-		panel.restoreConfigState(bytesPerLine, offset);
+//		panel.restoreConfigState(bytesPerLine, offset);
 	}
 
 	/**
@@ -384,14 +383,15 @@ public abstract class ByteViewerComponentProvider extends ComponentProviderAdapt
 		}
 
 		String viewName = model.getName();
-		ByteViewerComponent bvc =
-			panel.addView(viewName, model, editModeAction.isSelected(), updateViewPosition);
-		viewMap.put(viewName, bvc);
+//		ByteViewerComponent bvc =
+//			panel.addView(viewName, model, editModeAction.isSelected(), updateViewPosition);
+//		viewMap.put(viewName, bvc);
 		if (configChanged) {
 			tool.setConfigChanged(true);
 		}
 
-		return bvc;
+        throw new UnsupportedOperationException("Not supported yet.");
+//		return bvc;
 	}
 
 	void removeView(String viewName, boolean configChanged) {
@@ -399,7 +399,7 @@ public abstract class ByteViewerComponentProvider extends ComponentProviderAdapt
 		if (bvc == null) {
 			return;
 		}
-		panel.removeView(bvc);
+//		panel.removeView(bvc);
 
 		if (configChanged) {
 			tool.setConfigChanged(true);
@@ -424,8 +424,8 @@ public abstract class ByteViewerComponentProvider extends ComponentProviderAdapt
 	}
 
 	public Set<String> getCurrentViews() {
-		DataModelInfo info = panel.getDataModelInfo();
-		HashSet<String> currentViewNames = new HashSet<>(Arrays.asList(info.getNames()));
+//		DataModelInfo info = panel.getDataModelInfo();
+		HashSet<String> currentViewNames = new HashSet<>(); // Arrays.asList(info.getNames()));
 		return currentViewNames;
 	}
 
@@ -435,14 +435,14 @@ public abstract class ByteViewerComponentProvider extends ComponentProviderAdapt
 		}
 
 		if (tool.isVisible(this)) {
-			panel.refreshView();
+//			panel.refreshView();
 		}
 
 	}
 
-	protected ByteViewerPanel getByteViewerPanel() {
-		return panel;
-	}
+//	protected ByteViewerPanel getByteViewerPanel() {
+//		return panel;
+//	}
 
 	/**
 	 * Set the status info on the tool.
@@ -454,7 +454,7 @@ public abstract class ByteViewerComponentProvider extends ComponentProviderAdapt
 	}
 
 	void setEditMode(boolean isEditable) {
-		panel.setEditMode(isEditable);
+//		panel.setEditMode(isEditable);
 	}
 
 	protected Set<DataFormatModel> getDataFormatModels() {
@@ -495,7 +495,7 @@ public abstract class ByteViewerComponentProvider extends ComponentProviderAdapt
 	 * @param listener the listener to add
 	 */
 	public void addDisplayListener(AddressSetDisplayListener listener) {
-		panel.addDisplayListener(listener);
+//		panel.addDisplayListener(listener);
 	}
 
 	/**
@@ -504,6 +504,6 @@ public abstract class ByteViewerComponentProvider extends ComponentProviderAdapt
 	 * @param listener the listener to remove
 	 */
 	public void removeDisplayListener(AddressSetDisplayListener listener) {
-		panel.removeDisplayListener(listener);
+//		panel.removeDisplayListener(listener);
 	}
 }

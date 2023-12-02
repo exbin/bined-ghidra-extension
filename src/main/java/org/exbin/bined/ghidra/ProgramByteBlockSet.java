@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ghidra.app.plugin.core.byteviewer;
+package org.exbin.bined.ghidra;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -21,6 +21,8 @@ import java.util.List;
 
 import ghidra.app.events.ProgramLocationPluginEvent;
 import ghidra.app.events.ProgramSelectionPluginEvent;
+import ghidra.app.plugin.core.byteviewer.ByteBlockChangePluginEvent;
+import ghidra.app.plugin.core.byteviewer.MemoryByteBlock;
 import ghidra.app.plugin.core.format.*;
 import ghidra.framework.options.SaveState;
 import ghidra.program.model.address.*;

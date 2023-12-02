@@ -33,7 +33,7 @@ public class IndexMap {
 	private BigInteger numIndexes;
 	private BigInteger bytesInLine;
 
-	IndexMap() {
+	public IndexMap() {
 		this(new EmptyByteBlockSet(), 16, 0);
 	}
 
@@ -46,7 +46,7 @@ public class IndexMap {
 	 * the block. (If a block starts at address 6, we skip 6 byte positions so the entire block
 	 * is positioned as if the block started at 0
 	 */
-	IndexMap(ByteBlockSet blockSet, int bytesPerLine, int blockOffset) {
+	public IndexMap(ByteBlockSet blockSet, int bytesPerLine, int blockOffset) {
 
 		this.blockSet = blockSet;
 		ByteBlock[] blocks = blockSet.getBlocks();
@@ -81,7 +81,7 @@ public class IndexMap {
 	 *  offset padding and separator positions. This will always be a muliple of the number of
 	 *  bytes displayed per line.
 	 */
-	BigInteger getNumIndexes() {
+	public BigInteger getNumIndexes() {
 		return numIndexes;
 	}
 
@@ -89,7 +89,7 @@ public class IndexMap {
 	 * Returns the number of bytes per line.
 	 * @return  the number of bytes per line
 	 */
-	int getBytesPerLine() {
+	public int getBytesPerLine() {
 		return bytesInLine.intValue();
 	}
 
@@ -100,7 +100,7 @@ public class IndexMap {
 	 * @return The ByteBlockInfo object that contains the block and offset into that block
 	 * that is the resulting byte value.
 	 */
-	IndexedByteBlockInfo getBlockInfo(BigInteger index, int fieldOffset) {
+	public IndexedByteBlockInfo getBlockInfo(BigInteger index, int fieldOffset) {
 		SortedMap<BigInteger, BlockInfo> tailMap = blockInfoMap.tailMap(index);
 		if (tailMap.isEmpty()) {
 			return null;
@@ -120,7 +120,7 @@ public class IndexMap {
 	 * @param index the index to check if it is a block separator index
 	 * @return true if the given index is between blocks.
 	 */
-	boolean isBlockSeparatorIndex(BigInteger index) {
+	public boolean isBlockSeparatorIndex(BigInteger index) {
 		return blockInfoMap.containsKey(index);
 	}
 
@@ -131,7 +131,7 @@ public class IndexMap {
 	 * @param factories that generated values for a line
 	 * @return the field location for the given byte location
 	 */
-	FieldLocation getFieldLocation(ByteBlock block, BigInteger offset, FieldFactory[] factories) {
+	public FieldLocation getFieldLocation(ByteBlock block, BigInteger offset, FieldFactory[] factories) {
 		for (BlockInfo blockInfo : blockInfoMap.values()) {
 			if (blockInfo.block == block) {
 				BigInteger byteIndex = blockInfo.blockStart.add(offset);
@@ -159,7 +159,7 @@ public class IndexMap {
 	 * @return the index of the first active factory on that line. This will be 0 except for
 	 * the first line of a block which may start part way in the line.
 	 */
-	int getFirstActiveFactoryIndex(BigInteger index, FieldFactory[] factories) {
+	public int getFirstActiveFactoryIndex(BigInteger index, FieldFactory[] factories) {
 		for (int i = 0; i < factories.length; i++) {
 			if (factories[i].isActive(index)) {
 				return i;
@@ -175,7 +175,7 @@ public class IndexMap {
 	 * @return the index of the last active factory on that line. This will be factories.length
 	 * except for the last line of a block which may end part way in the line.
 	 */
-	int getLastActiveFactoryIndex(BigInteger index, FieldFactory[] factories) {
+	public int getLastActiveFactoryIndex(BigInteger index, FieldFactory[] factories) {
 		for (int i = factories.length - 1; i >= 0; i--) {
 			if (factories[i].isActive(index)) {
 				return i;
@@ -196,7 +196,7 @@ public class IndexMap {
 	 * are identical except for which offset it uses to get its bytes for display.
 	 * @return the byte offset from the byte that would be shown at the beginning of the line
 	 */
-	int getFieldOffset(BigInteger lineIndex, int fieldNum, FieldFactory[] factories) {
+	public int getFieldOffset(BigInteger lineIndex, int fieldNum, FieldFactory[] factories) {
 		int firstActiveFactoryIndex = getFirstActiveFactoryIndex(lineIndex, factories);
 		if (firstActiveFactoryIndex < 0) {
 			return 0;
@@ -221,7 +221,7 @@ public class IndexMap {
 	 * @param factories the list of factories for a line
 	 * @return the active index of the factory that displays bytes at the given fieldOffset. 
 	 */
-	int getFieldNum(BigInteger lineIndex, int fieldOffset, FieldFactory[] factories) {
+	public int getFieldNum(BigInteger lineIndex, int fieldOffset, FieldFactory[] factories) {
 		int firstActiveFactoryIndex = getFirstActiveFactoryIndex(lineIndex, factories);
 		if (firstActiveFactoryIndex < 0) {
 			return 0;
@@ -240,7 +240,7 @@ public class IndexMap {
 	 * Returns the BlockSet.
 	 * @return the BlockSet that was used to create this index map
 	 */
-	ByteBlockSet getByteBlockSet() {
+	public ByteBlockSet getByteBlockSet() {
 		return blockSet;
 	}
 
@@ -266,24 +266,23 @@ public class IndexMap {
 		return List.of();
 	}
 
-}
+    /**
+     * Class to hold compute block index information.
+     */
+    public static class BlockInfo {
+        ByteBlock block;
+        BigInteger startIndex;
+        BigInteger blockStart;
+        BigInteger blockEnd;
+        BigInteger endIndex;
 
-/**
- * Class to hold compute block index information.
- */
-class BlockInfo {
-	ByteBlock block;
-	BigInteger startIndex;
-	BigInteger blockStart;
-	BigInteger blockEnd;
-	BigInteger endIndex;
-
-	BlockInfo(ByteBlock block, BigInteger startIndex, BigInteger blockStart, BigInteger blockEnd,
-			BigInteger endIndex) {
-		this.block = block;
-		this.startIndex = startIndex;
-		this.blockStart = blockStart;
-		this.blockEnd = blockEnd;
-		this.endIndex = endIndex;
-	}
+        BlockInfo(ByteBlock block, BigInteger startIndex, BigInteger blockStart, BigInteger blockEnd,
+                BigInteger endIndex) {
+            this.block = block;
+            this.startIndex = startIndex;
+            this.blockStart = blockStart;
+            this.blockEnd = blockEnd;
+            this.endIndex = endIndex;
+        }
+    }
 }

@@ -9,8 +9,8 @@ buildscript {
 }
 
 plugins {
-	id 'java'
-	id 'distribution'
+    id 'java'
+    id 'distribution'
 }
 import org.gradle.util.VersionNumber
 
@@ -79,9 +79,22 @@ if (!hasProperty('mainClass')) {
     ext.mainClass = 'org.exbin.bined.ghidra.GhidraExtension'
 }
 
-task buildPack (type: Zip, dependsOn: Jar) {
-    archiveBaseName = "bined-ghidra-extension-${version}"
-	
+task buildPack (type: Zip, dependsOn: tasks.jar) {
+    archiveBaseName = "bined-ghidra-extension"
+    
+    into ('BinedExtension') {
+        from (jar) {
+            into 'lib'
+            rename { filename -> "BinedExtension.jar" }
+        }
+
+        from ('data') {
+            into 'data'
+        }
+        
+        from 'Module.manifest'
+        from 'LICENSE.txt'
+    }
 }
 // publish.dependsOn buildPack
 

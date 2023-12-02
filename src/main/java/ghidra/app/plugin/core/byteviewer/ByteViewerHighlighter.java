@@ -20,7 +20,7 @@ import java.awt.Color;
 import docking.widgets.fieldpanel.support.Highlight;
 import generic.theme.GColor;
 
-class ByteViewerHighlighter {
+public class ByteViewerHighlighter {
 
 	private static Highlight[] NO_HIGHLIGHTS = new Highlight[0];
 	private String highlightText;
@@ -34,15 +34,15 @@ class ByteViewerHighlighter {
 		return NO_HIGHLIGHTS;
 	}
 
-	void setText(String text) {
+	public void setText(String text) {
 		highlightText = text;
 	}
 
-	String getText() {
+	public String getText() {
 		return highlightText;
 	}
 
-	void setHighlightColor(Color color) {
+	public void setHighlightColor(Color color) {
 		this.highlightColor = color;
 	}
 }
