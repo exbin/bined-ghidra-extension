@@ -88,6 +88,10 @@ task buildPack (type: Zip, dependsOn: tasks.jar) {
             rename { filename -> "BinedExtension.jar" }
         }
 
+        from (configurations.runtimeClasspath) {
+            into 'lib'
+        }
+
         from ('data') {
             into 'data'
         }
@@ -145,6 +149,8 @@ dependencies {
 jar {
     manifest {
         attributes(
+            'Specification-Title': "BinedExtension",
+            'Specification-Version': "10.4",
             'Main-Class': mainClass
         )
     }

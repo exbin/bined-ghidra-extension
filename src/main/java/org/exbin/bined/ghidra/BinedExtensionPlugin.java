@@ -15,6 +15,7 @@
  */
 package org.exbin.bined.ghidra;
 
+import ghidra.app.CorePluginPackage;
 import ghidra.app.events.ProgramActivatedPluginEvent;
 import ghidra.app.events.ProgramClosedPluginEvent;
 import ghidra.app.events.ProgramHighlightPluginEvent;
@@ -41,15 +42,18 @@ import javax.annotation.ParametersAreNonnullByDefault;
  *
  * @author ExBin Project (https://exbin.org)
  */
-@PluginInfo(status = PluginStatus.RELEASED, packageName = "ExBin Project", category = PluginCategoryNames.BYTE_VIEWER, shortDescription = "Viewer / editor for binary data", description = "Viewer / editor for binary data using BinEd library",
+@PluginInfo(status = PluginStatus.UNSTABLE, packageName = CorePluginPackage.NAME, category = PluginCategoryNames.BYTE_VIEWER, shortDescription = "Viewer / editor for binary data", description = "Viewer / editor for binary data using BinEd library",
         servicesRequired = {
             ProgramManager.class, GoToService.class, NavigationHistoryService.class,
-            ClipboardService.class,}, eventsConsumed = {ProgramLocationPluginEvent.class,
+            ClipboardService.class},
+        eventsConsumed = {
+            ProgramLocationPluginEvent.class,
             ProgramActivatedPluginEvent.class, ProgramSelectionPluginEvent.class,
             ProgramHighlightPluginEvent.class, ProgramClosedPluginEvent.class,
-            ByteBlockChangePluginEvent.class,}, eventsProduced = {
+            ByteBlockChangePluginEvent.class},
+        eventsProduced = {
             ProgramLocationPluginEvent.class, ProgramSelectionPluginEvent.class,
-            ByteBlockChangePluginEvent.class,})
+            ByteBlockChangePluginEvent.class})
 @ParametersAreNonnullByDefault
 public class BinedExtensionPlugin extends AbstractByteViewerPlugin<ProgramByteViewerComponentProvider> {
 
