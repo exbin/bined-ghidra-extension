@@ -97,6 +97,7 @@ task buildPack (type: Zip, dependsOn: tasks.jar) {
         }
         
         from 'Module.manifest'
+        from 'extension.properties'
         from 'LICENSE.txt'
     }
 }
