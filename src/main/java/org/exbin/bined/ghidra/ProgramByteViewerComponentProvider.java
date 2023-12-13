@@ -48,7 +48,7 @@ import ghidra.util.classfinder.ClassSearcher;
 import ghidra.util.datastruct.WeakDataStructureFactory;
 import ghidra.util.datastruct.WeakSet;
 
-public class ProgramByteViewerComponentProvider extends ByteViewerComponentProvider
+public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 		implements DomainObjectListener, Navigatable {
 
 	private ImageIcon navigatableIcon;
@@ -586,6 +586,7 @@ public class ProgramByteViewerComponentProvider extends ByteViewerComponentProvi
 		}
 
 		blockSet = newByteBlockSet(changeManager);
+        notifyBlockSetChanged();
 		// panel.setByteBlocks(blockSet);
 	}
 

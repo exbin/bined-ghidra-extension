@@ -1,12 +1,12 @@
-/* ###
- * IP: GHIDRA
+/*
+ * Copyright (C) ExBin Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -42,18 +42,23 @@ import ghidra.program.model.address.*;
 import ghidra.util.Msg;
 import help.Help;
 import help.HelpService;
+import javax.annotation.ParametersAreNonnullByDefault;
+import org.exbin.bined.ghidra.gui.BinEdComponentPanel;
 
 /**
- * FieldViewer to show data formatted according to the DataFormatModel that is passed in to the
- * constructor. The source of the data is an array of ByteBlocks that is managed by an IndexMap.
+ * BinEd component FieldViewer.
+ *
+ * @author ExBin Project (https://exbin.org)
  */
-public class ByteViewerComponent {}
-//extends FieldPanel implements FieldMouseListener,
-//		FieldLocationListener, FieldSelectionListener, FieldInputListener {
-//
-//	private ByteViewerPanel panel;
-//	private DataFormatModel model;
-//	private int bytesPerLine;
+@ParametersAreNonnullByDefault
+public class BinedFieldPanel extends FieldPanel implements FieldMouseListener,
+		FieldLocationListener, FieldSelectionListener, FieldInputListener {
+    
+    public static final String PANEL_NAME = "BinEd";
+
+	private BinEdComponentPanel panel;
+	private DataFormatModel model;
+	private int bytesPerLine;
 //	private FieldFactory[] fieldFactories;
 //	private FontMetrics fm;
 //	private IndexMap indexMap;
@@ -65,7 +70,7 @@ public class ByteViewerComponent {}
 //	private Color editColor;
 //	private Color currentCursorColor;
 //	private Color currentCursorLineColor;
-//	private ByteViewerLayoutModel layoutModel;
+	private ByteViewerLayoutModel layoutModel;
 //	private boolean doingRefresh;
 //	private boolean doingEdit;
 //	private boolean updatingIndexMap;
@@ -75,34 +80,34 @@ public class ByteViewerComponent {}
 //
 //	private ByteViewerHighlighter highlightProvider = new ByteViewerHighlighter();
 //	private int highlightButton = MouseEvent.BUTTON2;
-//
-//	/**
-//	 * Constructor
-//	 *
-//	 * @param vpanel the byte viewer panel that this component lives in
-//	 * @param layoutModel the layout model for this component
-//	 * @param model data format model that knows how the data should be displayed
-//	 * @param bytesPerLine number of bytes displayed in a row
-//	 * @param fm the font metrics used for drawing
-//	 */
-//	protected ByteViewerComponent(ByteViewerPanel vpanel, ByteViewerLayoutModel layoutModel,
-//			DataFormatModel model, int bytesPerLine, FontMetrics fm) {
-//		super(layoutModel, "Byte Viewer");
+
+	/**
+	 * Constructor
+	 *
+	 * @param panel the byte viewer panel that this component lives in
+	 * @param layoutModel the layout model for this component
+	 * @param model data format model that knows how the data should be displayed
+	 * @param bytesPerLine number of bytes displayed in a row
+	 * @param fm the font metrics used for drawing
+	 */
+	protected BinedFieldPanel(ByteViewerLayoutModel layoutModel,
+			DataFormatModel model, int bytesPerLine) {
+		super(layoutModel, PANEL_NAME);
 //		setFieldDescriptionProvider((l, f) -> getFieldDescription(l, f));
-//
-//		this.panel = vpanel;
-//		this.model = model;
-//		this.bytesPerLine = bytesPerLine;
+
+		this.panel = new BinEdComponentPanel();
+		this.model = model;
+		this.bytesPerLine = bytesPerLine;
 //		this.fm = fm;
-//		this.layoutModel = layoutModel;
-//
-//		setName(model.getName());
+		this.layoutModel = layoutModel;
+
+		setName(model.getName());
 //		initialize();
-//
-//		// specialized line coloring
+
+		// specialized line coloring
 //		setBackgroundColorModel(new ByteViewerBackgroundColorModel());
-//	}
-//
+	}
+
 //	private String getFieldDescription(FieldLocation fieldLoc, Field field) {
 //		if (field == null) {
 //			return null;
@@ -117,16 +122,16 @@ public class ByteViewerComponent {}
 //		return null;
 //	}
 //
-//	@Override
-//	public void buttonPressed(FieldLocation fieldLocation, Field field, MouseEvent mouseEvent) {
-//		if (fieldLocation == null || field == null) {
-//			return;
-//		}
-//
-//		if (!(field instanceof ByteField)) {
-//			return;
-//		}
-//
+	@Override
+	public void buttonPressed(FieldLocation fieldLocation, Field field, MouseEvent mouseEvent) {
+		if (fieldLocation == null || field == null) {
+			return;
+		}
+
+		if (!(field instanceof ByteField)) {
+			return;
+		}
+
 //		if (mouseEvent.getButton() == highlightButton) {
 //			String text = field.getText();
 //			if (text.equals(highlightProvider.getText())) {
@@ -142,18 +147,18 @@ public class ByteViewerComponent {}
 //			mouseEvent.getButton() == MouseEvent.BUTTON1) {
 //			fieldLocationChanged(fieldLocation, field, true, false);
 //		}
-//	}
-//
-//	/**
-//	 * Called from the parent FieldPanel whenever the cursor position changes.
-//	 */
-//	@Override
-//	public void fieldLocationChanged(FieldLocation loc, Field field, EventTrigger trigger) {
-//		fieldLocationChanged(loc, field, false, trigger == EventTrigger.GUI_ACTION);
-//	}
-//
-//	private void fieldLocationChanged(FieldLocation loc, Field field, boolean isAltDown,
-//			boolean setCurrentView) {
+	}
+
+	/**
+	 * Called from the parent FieldPanel whenever the cursor position changes.
+	 */
+	@Override
+	public void fieldLocationChanged(FieldLocation loc, Field field, EventTrigger trigger) {
+		fieldLocationChanged(loc, field, false, trigger == EventTrigger.GUI_ACTION);
+	}
+
+	private void fieldLocationChanged(FieldLocation loc, Field field, boolean isAltDown,
+			boolean setCurrentView) {
 //		// tell the panel that the location has changed
 //		// translate location
 //		if (doingRefresh || doingEdit || loc == null || indexMap == null || field == null ||
@@ -165,7 +170,7 @@ public class ByteViewerComponent {}
 //		}
 //		if (setCurrentView) {
 //			//Set this component as the current view in the panel
-//			panel.setCurrentView(ByteViewerComponent.this);
+//			panel.setCurrentView(BinedFieldPanel.this);
 //		}
 //		// do the color update later because the field panel
 //		// listener is called after this one, and sets the
@@ -194,13 +199,13 @@ public class ByteViewerComponent {}
 //		int byteOffset = model.getByteOffset(info.getBlock(), pos);
 //		offset = offset.add(BigInteger.valueOf(byteOffset));
 //		panel.setInsertionField(this, block, offset, index, loc.getCol(), isAltDown);
-//	}
-//
-//	/**
-//	 * Called whenever the FieldViewer selection changes.
-//	 */
-//	@Override
-//	public void selectionChanged(FieldSelection selection, EventTrigger trigger) {
+	}
+
+	/**
+	 * Called whenever the FieldViewer selection changes.
+	 */
+	@Override
+	public void selectionChanged(FieldSelection selection, EventTrigger trigger) {
 //		if (blockSet == null || doingRefresh) {
 //			return;
 //		}
@@ -209,16 +214,16 @@ public class ByteViewerComponent {}
 //		// notify panel to update other components
 //		panel.updateSelection(this, sel);
 //		setViewerSelection(sel);
-//
-//	}
-//
-//	/**
-//	 * FieldInputListener method called to process key pressed event.
-//	 */
-//	@Override
-//	public void keyPressed(KeyEvent ev, BigInteger index, int fieldNum, int row, int col,
-//			Field field) {
-//
+
+	}
+
+	/**
+	 * FieldInputListener method called to process key pressed event.
+	 */
+	@Override
+	public void keyPressed(KeyEvent ev, BigInteger index, int fieldNum, int row, int col,
+			Field field) {
+
 //		panel.setStatusMessage("");
 //		if (!consumeKeyStrokes) {
 //			return;
@@ -321,8 +326,8 @@ public class ByteViewerComponent {}
 //			doingEdit = false;
 //			blockSet.endTransaction(transactionID, true);
 //		}
-//	}
-//
+	}
+
 //	private byte[] getByteValue(ByteBlock block, BigInteger offset) {
 //		byte[] b = new byte[model.getUnitByteSize()];
 //		try {
@@ -717,15 +722,15 @@ public class ByteViewerComponent {}
 //			doingRefresh = false;
 //		}
 //	}
-//
-//	@Override
-//	public void dispose() {
-//		super.dispose();
+
+	@Override
+	public void dispose() {
+		super.dispose();
 //		model.dispose();
-////    	scrollPane.getViewport().removeChangeListener(this);
+//    	scrollPane.getViewport().removeChangeListener(this);
 //		layoutModel.dispose();
-//	}
-//
+	}
+
 //	////////////////////////////////////////////////////////////////////////
 //
 //	/**
@@ -748,7 +753,7 @@ public class ByteViewerComponent {}
 //				if (e.getButton() == MouseEvent.BUTTON3) {
 //					// hack to make sure that a right-clicked component becomes the active
 //					// component
-//					panel.setCurrentView(ByteViewerComponent.this);
+//					panel.setCurrentView(BinedFieldPanel.this);
 //				}
 //			}
 //		});
@@ -980,4 +985,4 @@ public class ByteViewerComponent {}
 //		}
 //
 //	}
-//}
+}

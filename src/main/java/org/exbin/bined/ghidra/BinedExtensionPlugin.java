@@ -125,7 +125,7 @@ public class BinedExtensionPlugin extends AbstractByteViewerPlugin<ProgramByteVi
     }
 
     @Override
-    public void updateSelection(ByteViewerComponentProvider provider,
+    public void updateSelection(BinEdComponentProvider provider,
             ProgramSelectionPluginEvent event, Program program) {
         if (provider == connectedProvider) {
             firePluginEvent(event);
@@ -133,7 +133,7 @@ public class BinedExtensionPlugin extends AbstractByteViewerPlugin<ProgramByteVi
     }
 
     @Override
-    public void highlightChanged(ByteViewerComponentProvider provider, ProgramSelection highlight) {
+    public void highlightChanged(BinEdComponentProvider provider, ProgramSelection highlight) {
         if (provider == connectedProvider) {
             tool.firePluginEvent(new ProgramHighlightPluginEvent(getName(), highlight,
                     connectedProvider.getProgram()));

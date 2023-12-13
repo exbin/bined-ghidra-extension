@@ -28,6 +28,7 @@ import docking.action.ToggleDockingAction;
 import generic.theme.*;
 import ghidra.GhidraOptions;
 import ghidra.GhidraOptions.CURSOR_MOUSE_BUTTON_NAMES;
+import ghidra.app.plugin.core.byteviewer.ByteViewerLayoutModel;
 import ghidra.app.plugin.core.byteviewer.ByteViewerPanel;
 import ghidra.app.plugin.core.byteviewer.ToggleEditAction;
 import ghidra.app.plugin.core.format.*;
@@ -41,7 +42,7 @@ import ghidra.util.classfinder.ClassSearcher;
 import ghidra.util.task.SwingUpdateManager;
 import org.exbin.bined.ghidra.gui.BinEdComponentPanel;
 
-public abstract class ByteViewerComponentProvider extends ComponentProviderAdapter
+public abstract class BinEdComponentProvider extends ComponentProviderAdapter
 		implements OptionsChangeListener {
 
 	protected static final String BLOCK_NUM = "Block Num";
@@ -94,7 +95,7 @@ public abstract class ByteViewerComponentProvider extends ComponentProviderAdapt
 	private int offset;
 	private int hexGroupSize = 1;
 
-	protected Map<String, ByteViewerComponent> viewMap = new HashMap<>();
+	protected Map<String, BinedFieldPanel> viewMap = new HashMap<>();
 
 	protected ToggleDockingAction editModeAction;
 //	protected OptionsAction setOptionsAction;
@@ -107,7 +108,7 @@ public abstract class ByteViewerComponentProvider extends ComponentProviderAdapt
 
 	private Map<String, Class<? extends DataFormatModel>> dataFormatModelClassMap;
 
-	protected ByteViewerComponentProvider(PluginTool tool, AbstractByteViewerPlugin<?> plugin,
+	protected BinEdComponentProvider(PluginTool tool, AbstractByteViewerPlugin<?> plugin,
 			String name, Class<?> contextType) {
 		super(tool, name, plugin.getName(), contextType);
 		this.plugin = plugin;
@@ -125,7 +126,7 @@ public abstract class ByteViewerComponentProvider extends ComponentProviderAdapt
 		updateManager = new SwingUpdateManager(1000, 3000, () -> refreshView());
 
 		addView(DEFAULT_VIEW);
-		setWindowMenuGroup("Byte Viewer");
+		setWindowMenuGroup("BinEd");
 	}
 
 	private void initializedDataFormatModelClassMap() {
@@ -151,12 +152,16 @@ public abstract class ByteViewerComponentProvider extends ComponentProviderAdapt
 
 	@Override
 	public HelpLocation getHelpLocation() {
-		return new HelpLocation("ByteViewerPlugin", "ByteViewerPlugin");
+		return new HelpLocation("BinEdPlugin", "BinEdPlugin");
 	}
 
 	protected ByteBlock[] getByteBlocks() {
 		return (blockSet == null) ? null : blockSet.getBlocks();
 	}
+    
+    protected void notifyBlockSetChanged() {
+        panel.setContentData(new ByteBlocksBinaryData(blockSet));
+    }
 
 	/**
 	 * Notification that an option changed.
@@ -169,7 +174,7 @@ public abstract class ByteViewerComponentProvider extends ComponentProviderAdapt
 	@Override
 	public void optionsChanged(ToolOptions options, String optionName, Object oldValue,
 			Object newValue) {
-		if (options.getName().equals("ByteViewer")) {
+		if (options.getName().equals("BinEd")) {
 			if (optionName.equals(OPTION_FONT)) {
 				setFont(SystemUtilities.adjustForFontSizeOverride((Font) newValue));
 			}
@@ -193,8 +198,8 @@ public abstract class ByteViewerComponentProvider extends ComponentProviderAdapt
 
 	// Options.getStringEnum() is deprecated
 	private void setOptions() {
-		ToolOptions opt = tool.getOptions("ByteViewer");
-		HelpLocation help = new HelpLocation("ByteViewerPlugin", "Option");
+		ToolOptions opt = tool.getOptions("BinEd");
+		HelpLocation help = new HelpLocation("BinEdPlugin", "Option");
 		opt.setOptionsHelpLocation(help);
 
 		opt.registerThemeColorBinding(SEPARATOR_COLOR_OPTION_NAME, SEPARATOR_COLOR.getId(), help,
@@ -315,7 +320,7 @@ public abstract class ByteViewerComponentProvider extends ComponentProviderAdapt
 			return;
 		}
 		hexGroupSize = groupSize;
-		ByteViewerComponent component = viewMap.get(HexFormatModel.NAME);
+		BinedFieldPanel component = viewMap.get(HexFormatModel.NAME);
 		if (component != null) {
 //			component.setGroupSize(groupSize);
 //			component.invalidate();
@@ -375,7 +380,7 @@ public abstract class ByteViewerComponentProvider extends ComponentProviderAdapt
 		}
 	}
 
-	private ByteViewerComponent addView(DataFormatModel model, boolean configChanged,
+	private BinedFieldPanel addView(DataFormatModel model, boolean configChanged,
 			boolean updateViewPosition) {
 
 		if (model.getName().equals(HexFormatModel.NAME)) {
@@ -383,23 +388,23 @@ public abstract class ByteViewerComponentProvider extends ComponentProviderAdapt
 		}
 
 		String viewName = model.getName();
-//		ByteViewerComponent bvc =
+        
+		BinedFieldPanel fieldPanel = new BinedFieldPanel(new ByteViewerLayoutModel(), model, bytesPerLine);
+        
 //			panel.addView(viewName, model, editModeAction.isSelected(), updateViewPosition);
-//		viewMap.put(viewName, bvc);
+		viewMap.put(viewName, fieldPanel);
 		if (configChanged) {
 			tool.setConfigChanged(true);
 		}
 
-        throw new UnsupportedOperationException("Not supported yet.");
-//		return bvc;
+		return fieldPanel;
 	}
 
 	void removeView(String viewName, boolean configChanged) {
-		ByteViewerComponent bvc = viewMap.remove(viewName);
-		if (bvc == null) {
+		BinedFieldPanel fieldPanel = viewMap.remove(viewName);
+		if (fieldPanel == null) {
 			return;
 		}
-//		panel.removeView(bvc);
 
 		if (configChanged) {
 			tool.setConfigChanged(true);

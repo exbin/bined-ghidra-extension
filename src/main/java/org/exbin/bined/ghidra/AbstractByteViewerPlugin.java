@@ -270,13 +270,13 @@ public abstract class AbstractByteViewerPlugin<P extends ProgramByteViewerCompon
 		return connectedProvider;
 	}
 
-	public abstract void updateSelection(ByteViewerComponentProvider provider,
+	public abstract void updateSelection(BinEdComponentProvider provider,
 			ProgramSelectionPluginEvent event, Program program);
 
-	public abstract void highlightChanged(ByteViewerComponentProvider provider,
+	public abstract void highlightChanged(BinEdComponentProvider provider,
 			ProgramSelection highlight);
 
-	public void closeProvider(ByteViewerComponentProvider provider) {
+	public void closeProvider(BinEdComponentProvider provider) {
 		if (provider == connectedProvider) {
 			tool.showComponentProvider(provider, false);
 		}
@@ -293,7 +293,7 @@ public abstract class AbstractByteViewerPlugin<P extends ProgramByteViewerCompon
 		}
 	}
 
-	protected void removeProvider(ByteViewerComponentProvider provider) {
+	protected void removeProvider(BinEdComponentProvider provider) {
 		tool.removeComponentProvider(provider);
 		provider.dispose();
 	}
