@@ -88,7 +88,7 @@ public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 			addToToolbar();
 		}
 
-		decorationComponent = new DecoratorPanel(panel, isConnected);
+		decorationComponent = new DecoratorPanel(panel.getComponent(), isConnected);
 		clipboardProvider = new ByteViewerClipboardProvider(this, tool);
 		addToTool();
 

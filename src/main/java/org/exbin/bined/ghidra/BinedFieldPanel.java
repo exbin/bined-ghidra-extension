@@ -44,6 +44,7 @@ import help.Help;
 import help.HelpService;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.exbin.bined.ghidra.gui.BinEdComponentPanel;
+import org.exbin.bined.ghidra.main.BinEdEditorComponent;
 
 /**
  * BinEd component FieldViewer.
@@ -56,8 +57,9 @@ public class BinedFieldPanel extends FieldPanel implements FieldMouseListener,
     
     public static final String PANEL_NAME = "BinEd";
 
-	private BinEdComponentPanel panel;
-	private DataFormatModel model;
+	private BinEdEditorComponent panel;
+
+    private DataFormatModel model;
 	private int bytesPerLine;
 //	private FieldFactory[] fieldFactories;
 //	private FontMetrics fm;
@@ -90,13 +92,11 @@ public class BinedFieldPanel extends FieldPanel implements FieldMouseListener,
 	 * @param bytesPerLine number of bytes displayed in a row
 	 * @param fm the font metrics used for drawing
 	 */
-	protected BinedFieldPanel(ByteViewerLayoutModel layoutModel,
+	protected BinedFieldPanel(BinEdEditorComponent panel, ByteViewerLayoutModel layoutModel,
 			DataFormatModel model, int bytesPerLine) {
 		super(layoutModel, PANEL_NAME);
-//		setFieldDescriptionProvider((l, f) -> getFieldDescription(l, f));
-
-		this.panel = new BinEdComponentPanel();
-		this.model = model;
+        this.panel = panel;
+        this.model = model;
 		this.bytesPerLine = bytesPerLine;
 //		this.fm = fm;
 		this.layoutModel = layoutModel;
@@ -106,6 +106,8 @@ public class BinedFieldPanel extends FieldPanel implements FieldMouseListener,
 
 		// specialized line coloring
 //		setBackgroundColorModel(new ByteViewerBackgroundColorModel());
+//		setFieldDescriptionProvider((l, f) -> getFieldDescription(l, f));
+
 	}
 
 //	private String getFieldDescription(FieldLocation fieldLoc, Field field) {
@@ -122,7 +124,7 @@ public class BinedFieldPanel extends FieldPanel implements FieldMouseListener,
 //		return null;
 //	}
 //
-	@Override
+    @Override
 	public void buttonPressed(FieldLocation fieldLocation, Field field, MouseEvent mouseEvent) {
 		if (fieldLocation == null || field == null) {
 			return;
