@@ -70,7 +70,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.nio.charset.Charset;
-import javax.swing.JScrollPane;
 
 /**
  * Component for BinEd editor instances.
@@ -100,7 +99,6 @@ public class BinEdEditorComponent {
     private CharsetChangeListener charsetChangeListener = null;
     private ModifiedStateListener modifiedChangeListener = null;
     private BasicValuesPanel valuesPanel = null;
-    private JScrollPane valuesPanelScrollPane = null;
     private boolean parsingPanelVisible = false;
     private EncodingsHandler encodingsHandler;
     private ActionListener goToPositionAction;
@@ -475,33 +473,6 @@ public class BinEdEditorComponent {
 
         // TODO applyOptions.getStatusOptions().loadFromPreferences(preferences.getStatusPreferences());
     }
-
-//    public void showValuesPanel() {
-//        if (!parsingPanelVisible) {
-//            parsingPanelVisible = true;
-//            if (valuesPanel == null) {
-//                valuesPanel = new BasicValuesPanel();
-//                valuesPanel.setCodeArea(codeArea, undoHandler);
-//                valuesPanelScrollPane = new JScrollPane(valuesPanel);
-//                valuesPanelScrollPane.setBorder(null);
-//            }
-//            this.add(valuesPanelScrollPane, BorderLayout.EAST);
-//            valuesPanel.enableUpdate();
-//            valuesPanel.updateValues();
-//            this.revalidate();
-//            revalidate();
-//        }
-//    }
-//
-//    public void hideValuesPanel() {
-//        if (parsingPanelVisible) {
-//            parsingPanelVisible = false;
-//            valuesPanel.disableUpdate();
-//            this.remove(valuesPanelScrollPane);
-//            this.revalidate();
-//            revalidate();
-//        }
-//    }
 
     public void setUndoHandler(BinaryDataUndoHandler undoHandler) {
         componentPanel.setUndoHandler(undoHandler);

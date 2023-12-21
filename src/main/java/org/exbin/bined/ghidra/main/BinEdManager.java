@@ -22,7 +22,7 @@ import org.exbin.bined.ghidra.action.EditSelectionAction;
 import org.exbin.bined.ghidra.action.GoToPositionAction;
 import org.exbin.bined.ghidra.action.OptionsAction;
 import org.exbin.bined.ghidra.bookmarks.BookmarksManager;
-//import org.exbin.bined.ghidra.compare.action.CompareFilesAction;
+import org.exbin.bined.ghidra.compare.action.CompareFilesAction;
 import org.exbin.bined.ghidra.gui.BinEdComponentPanel;
 import org.exbin.bined.ghidra.gui.BinEdToolbarPanel;
 import org.exbin.bined.ghidra.inspector.BinEdInspectorManager;
@@ -31,12 +31,11 @@ import org.exbin.bined.ghidra.operation.action.ConvertDataAction;
 import org.exbin.bined.ghidra.operation.action.InsertDataAction;
 import org.exbin.bined.ghidra.search.action.SearchAction;
 import org.exbin.bined.ghidra.search.gui.BinarySearchPanel;
-//import org.exbin.bined.ghidra.tool.content.action.ClipboardContentAction;
-//import org.exbin.bined.ghidra.tool.content.action.DragDropContentAction;
+import org.exbin.bined.ghidra.tool.content.action.ClipboardContentAction;
+import org.exbin.bined.ghidra.tool.content.action.DragDropContentAction;
 import org.exbin.bined.swing.CodeAreaCore;
 import org.exbin.bined.swing.extended.ExtCodeArea;
 import org.exbin.framework.about.gui.AboutPanel;
-import org.exbin.framework.bined.FileHandlingMode;
 import org.exbin.framework.bined.gui.BinEdComponentFileApi;
 import org.exbin.framework.bined.preferences.BinaryEditorPreferences;
 import org.exbin.framework.utils.ActionUtils;
@@ -66,8 +65,6 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.util.prefs.Preferences;
-import org.exbin.framework.preferences.PreferencesWrapper;
 
 /**
  * Manager for binary editor.
@@ -81,10 +78,9 @@ public class BinEdManager {
 
     private static final String BINED_TANGO_ICON_THEME_PREFIX = "/org/exbin/framework/bined/resources/icons/tango-icon-theme/16x16/actions/";
     private static final String FRAMEWORK_TANGO_ICON_THEME_PREFIX = "/org/exbin/framework/action/resources/icons/tango-icon-theme/16x16/actions/";
-    private static final FileHandlingMode DEFAULT_FILE_HANDLING_MODE = FileHandlingMode.DELTA;
     private static final String ONLINE_HELP_URL = "https://bined.exbin.org/intellij-plugin/?manual";
 
-    private final BinaryEditorPreferences preferences;
+    private BinaryEditorPreferences preferences;
     private BinEdFileManager fileManager = new BinEdFileManager();
 
     private volatile boolean initialized;
@@ -92,7 +88,6 @@ public class BinEdManager {
     private InspectorSupport inspectorSupport;
 
     private BinEdManager() {
-        preferences = new BinaryEditorPreferences(new PreferencesWrapper(Preferences.systemRoot())); // new PreferencesWrapper(NbPreferences.forModule(BinaryEditorPreferences.class)));
     }
 
     @Nonnull
@@ -193,7 +188,7 @@ public class BinEdManager {
 
         return binEdEditorComponent;
     }
-
+    
     @Nonnull
     public BinEdFileManager getFileManager() {
         return fileManager;
@@ -421,7 +416,7 @@ public class BinEdManager {
     }
 
     @Nonnull
-    private AbstractAction createOptionsAction(BinEdEditorComponent editorComponent) {
+    public AbstractAction createOptionsAction(BinEdEditorComponent editorComponent) {
         return new OptionsAction(editorComponent, preferences);
     }
 
@@ -471,8 +466,7 @@ public class BinEdManager {
     @Nonnull
     private JMenuItem createCompareFilesMenuItem(ExtCodeArea codeArea) {
         final JMenuItem compareFilesMenuItem = new JMenuItem("Compare Files...");
-        compareFilesMenuItem.setEnabled(false);
-//        compareFilesMenuItem.addActionListener(new CompareFilesAction(codeArea));
+        compareFilesMenuItem.addActionListener(new CompareFilesAction(codeArea));
         return compareFilesMenuItem;
     }
 
@@ -578,14 +572,14 @@ public class BinEdManager {
     @Nonnull
     public JMenuItem createClipboardContentMenuItem() {
         JMenuItem clipboardContentMenuItem = new JMenuItem("Clipboard Content...");
-//        clipboardContentMenuItem.addActionListener(new ClipboardContentAction());
+        clipboardContentMenuItem.addActionListener(new ClipboardContentAction());
         return clipboardContentMenuItem;
     }
 
     @Nonnull
     public JMenuItem createDragDropContentMenuItem() {
         JMenuItem dragDropContentMenuItem = new JMenuItem("Drag&Drop Content...");
-//        dragDropContentMenuItem.addActionListener(new DragDropContentAction());
+        dragDropContentMenuItem.addActionListener(new DragDropContentAction());
         return dragDropContentMenuItem;
     }
 
@@ -602,6 +596,10 @@ public class BinEdManager {
     @Nonnull
     public BinaryEditorPreferences getPreferences() {
         return preferences;
+    }
+
+    public void setPreferences(BinaryEditorPreferences preferences) {
+        this.preferences = preferences;
     }
 
     public void setBookmarksSupport(BookmarksSupport bookmarksSupport) {

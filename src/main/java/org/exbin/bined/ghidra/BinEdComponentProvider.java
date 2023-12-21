@@ -15,6 +15,8 @@
  */
 package org.exbin.bined.ghidra;
 
+import docking.ActionContext;
+import docking.action.DockingAction;
 import static ghidra.GhidraOptions.*;
 
 import java.awt.*;
@@ -24,7 +26,6 @@ import java.util.List;
 
 import javax.swing.JComponent;
 
-import docking.action.ToggleDockingAction;
 import generic.theme.*;
 import ghidra.GhidraOptions;
 import ghidra.GhidraOptions.CURSOR_MOUSE_BUTTON_NAMES;
@@ -38,29 +39,18 @@ import ghidra.framework.plugintool.PluginTool;
 import ghidra.util.*;
 import ghidra.util.classfinder.ClassSearcher;
 import ghidra.util.task.SwingUpdateManager;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
-import javax.swing.JMenu;
 import org.exbin.auxiliary.paged_data.EmptyBinaryData;
-import org.exbin.bined.ghidra.gui.BinEdComponentPanel;
-import org.exbin.bined.ghidra.inspector.action.ShowParsingPanelAction;
 import org.exbin.bined.ghidra.main.BinEdEditorComponent;
 import org.exbin.bined.ghidra.main.BinEdFileManager;
 import org.exbin.bined.ghidra.main.BinEdManager;
-import org.exbin.bined.swing.CodeAreaCore;
+import org.exbin.bined.ghidra.main.BinEdPreferencesWrapper;
+import org.exbin.framework.bined.preferences.BinaryEditorPreferences;
 
 public abstract class BinEdComponentProvider extends ComponentProviderAdapter
         implements OptionsChangeListener {
 
-    private static final String BINED_TANGO_ICON_THEME_PREFIX = "/org/exbin/framework/bined/resources/icons/tango-icon-theme/16x16/actions/";
-    private static final String FRAMEWORK_TANGO_ICON_THEME_PREFIX = "/org/exbin/framework/action/resources/icons/tango-icon-theme/16x16/actions/";
-    private static final String ONLINE_HELP_URL = "https://bined.exbin.org/intellij-plugin/?manual";
+    private final BinaryEditorPreferences preferences = new BinaryEditorPreferences(new BinEdPreferencesWrapper(new SaveState()));
 
-//    private final BinaryEditorPreferences preferences;
-    private BookmarksSupport bookmarksSupport;
-    private InspectorSupport inspectorSupport;
-    
     protected static final String BLOCK_NUM = "Block Num";
     protected static final String BLOCK_OFFSET = "Block Offset";
     protected static final String BLOCK_COLUMN = "Block Column";
@@ -91,15 +81,9 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
 
     static final String DEFAULT_INDEX_NAME = "Addresses";
 
-    static final String SEPARATOR_COLOR_OPTION_NAME = "Block Separator Color";
-    static final String CHANGED_VALUE_COLOR_OPTION_NAME = "Changed Values Color";
-    static final String CURSOR_ACTIVE_COLOR_OPTION_NAME = "Active Cursor Color";
-    static final String CURSOR_NON_ACTIVE_COLOR_OPTION_NAME = "Non-Active Cursor Color";
-    static final String CURSOR_NOT_FOCUSED_COLOR_OPTION_NAME = "Non-Focused Cursor Color";
-
     static final String OPTION_FONT = "Font";
 
-    private static final String DEFAULT_VIEW = "Hex";
+    private static final String DEFAULT_VIEW = "BinEd";
     private static final String CURRENT_LINE_COLOR_OPTION_NAME
             = GhidraOptions.HIGHLIGHT_CURSOR_LINE_COLOR_OPTION_NAME;
     private static final String OPTION_HIGHLIGHT_CURSOR_LINE
@@ -113,8 +97,8 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
 
     protected Map<String, BinedFieldPanel> viewMap = new HashMap<>();
 
-    protected ToggleDockingAction editModeAction;
-//	protected OptionsAction setOptionsAction;
+//    protected ToggleDockingAction editModeAction;
+	protected DockingAction optionsAction;
 
     protected ProgramByteBlockSet blockSet;
 
@@ -133,13 +117,13 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
         initializedDataFormatModelClassMap();
 
         BinEdManager binEdManager = BinEdManager.getInstance();
+        binEdManager.setPreferences(preferences);
         BinEdFileManager binEdFileManager = binEdManager.getFileManager();
         panel = binEdManager.createBinEdEditor();
         binEdFileManager.initComponentPanel(panel.getComponentPanel());
 
         bytesPerLine = DEFAULT_BYTES_PER_LINE;
         setIcon(new GIcon("icon.plugin.byteviewer.provider"));
-        setOptions();
 
         createActions();
 
@@ -159,10 +143,15 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
 
     private void createActions() {
 //		editModeAction = new ToggleEditAction(this, plugin);
-//		setOptionsAction = new OptionsAction(this, plugin);
+		optionsAction = new DockingAction("BinEd Plugin Options", plugin.getName()) {
+            @Override
+            public void actionPerformed(ActionContext ac) {
+                BinEdManager.getInstance().createOptionsAction(panel).actionPerformed(null);
+            }
+        };
 
 //		addLocalAction(editModeAction);
-//		addLocalAction(setOptionsAction);
+		addLocalAction(optionsAction);
     }
 
     @Override
@@ -212,65 +201,6 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
 //        FontMetrics fm = panel.getFontMetrics(font);
 //		panel.setFontMetrics(fm);
         tool.setConfigChanged(true);
-    }
-
-    // Options.getStringEnum() is deprecated
-    private void setOptions() {
-        ToolOptions opt = tool.getOptions("BinEd");
-        HelpLocation help = new HelpLocation("BinEdPlugin", "Option");
-        opt.setOptionsHelpLocation(help);
-
-        opt.registerThemeColorBinding(SEPARATOR_COLOR_OPTION_NAME, SEPARATOR_COLOR.getId(), help,
-                "Color used for separator shown between memory blocks.");
-
-        opt.registerThemeColorBinding(CHANGED_VALUE_COLOR_OPTION_NAME, CHANGED_VALUE_COLOR.getId(),
-                new HelpLocation("ByteViewerPlugin", "EditColor"),
-                "Color of changed bytes when editing.");
-
-        opt.registerThemeColorBinding(CURSOR_ACTIVE_COLOR_OPTION_NAME, CURSOR_ACTIVE_COLOR.getId(),
-                help, "Color of cursor in the active view.");
-
-        opt.registerThemeColorBinding(CURSOR_NON_ACTIVE_COLOR_OPTION_NAME,
-                CURSOR_NON_ACTIVE_COLOR.getId(),
-                help, "Color of cursor in the non-active views.");
-
-        opt.registerThemeColorBinding(CURSOR_NOT_FOCUSED_COLOR_OPTION_NAME,
-                CURSOR_NOT_FOCUSED_COLOR.getId(),
-                help, "Color of cursor when the byteview does not have focus.");
-
-        opt.registerThemeColorBinding(CURRENT_LINE_COLOR_OPTION_NAME,
-                GhidraOptions.DEFAULT_CURSOR_LINE_COLOR.getId(), help,
-                "Color of the line containing the cursor");
-
-        opt.registerThemeFontBinding(OPTION_FONT, DEFAULT_FONT_ID, help,
-                "Font used in the views.");
-        opt.registerOption(OPTION_HIGHLIGHT_CURSOR_LINE, true, help,
-                "Toggles highlighting background color of line containing the cursor");
-
-//		Color separatorColor = opt.getColor(SEPARATOR_COLOR_OPTION_NAME, SEPARATOR_COLOR);
-//		panel.setSeparatorColor(separatorColor);
-//
-//		panel.setCurrentCursorColor(CURSOR_ACTIVE_COLOR);
-//		panel.setNonFocusCursorColor(CURSOR_NOT_FOCUSED_COLOR);
-//		panel.setCursorColor(CURSOR_NON_ACTIVE_COLOR);
-//		panel.setCurrentCursorLineColor(CURRENT_LINE_COLOR);
-//
-//		Font font = Gui.getFont(DEFAULT_FONT_ID);
-//		FontMetrics fm = panel.getFontMetrics(font);
-//
-//		panel.restoreConfigState(fm, CHANGED_VALUE_COLOR);
-//
-//		opt.addOptionsChangeListener(this);
-//
-//		// cursor highlight options
-//		opt = tool.getOptions(CATEGORY_BROWSER_FIELDS);
-//		GhidraOptions.CURSOR_MOUSE_BUTTON_NAMES mouseButton = opt.getEnum(
-//			CURSOR_HIGHLIGHT_BUTTON_NAME, GhidraOptions.CURSOR_MOUSE_BUTTON_NAMES.MIDDLE);
-//		panel.setHighlightButton(mouseButton.getMouseEventID());
-//
-//		panel.setMouseButtonHighlightColor(
-//			opt.getColor(HIGHLIGHT_COLOR_NAME, DEFAULT_HIGHLIGHT_COLOR));
-        opt.addOptionsChangeListener(this);
     }
 
     /**
@@ -371,7 +301,6 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
         restoreViews(names, false);
         bytesPerLine = saveState.getInt(BYTES_PER_LINE_NAME, DEFAULT_BYTES_PER_LINE);
         offset = saveState.getInt(OFFSET_NAME, 0);
-//		panel.restoreConfigState(bytesPerLine, offset);
     }
 
     /**
@@ -525,36 +454,5 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
      */
     public void removeDisplayListener(AddressSetDisplayListener listener) {
 //		panel.removeDisplayListener(listener);
-    }
-
-    public void setBookmarksSupport(BookmarksSupport bookmarksSupport) {
-        this.bookmarksSupport = bookmarksSupport;
-    }
-
-    public void setInspectorSupport(InspectorSupport inspectorSupport) {
-        this.inspectorSupport = inspectorSupport;
-    }
-
-    public enum PopupMenuVariant {
-        BASIC, NORMAL, EDITOR
-    }
-
-    @ParametersAreNonnullByDefault
-    public interface BookmarksSupport {
-        @Nonnull
-        JMenu createBookmarksPopupMenu();
-
-        void registerBookmarksComponentActions(JComponent component);
-
-        void setActiveCodeArea(@Nullable CodeAreaCore codeArea);
-    }
-
-    @ParametersAreNonnullByDefault
-    public interface InspectorSupport {
-
-        boolean isShowParsingPanel(BinEdComponentPanel binEdComponentPanel);
-
-        @Nonnull
-        ShowParsingPanelAction showParsingPanelAction(BinEdComponentPanel binEdComponentPanel);
     }
 }

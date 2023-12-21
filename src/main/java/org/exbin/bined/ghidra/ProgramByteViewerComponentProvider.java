@@ -73,7 +73,7 @@ public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 
 	public ProgramByteViewerComponentProvider(PluginTool tool, AbstractByteViewerPlugin<?> plugin,
 			boolean isConnected) {
-		this(tool, plugin, "Bytes", isConnected);
+		this(tool, plugin, "BinEd", isConnected);
 	}
 
 	protected ProgramByteViewerComponentProvider(PluginTool tool,
