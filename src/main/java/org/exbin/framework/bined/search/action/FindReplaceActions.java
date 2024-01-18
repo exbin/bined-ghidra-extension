@@ -34,6 +34,7 @@ import org.exbin.framework.utils.ActionUtils;
 import org.exbin.framework.editor.api.EditorProvider;
 import org.exbin.framework.bined.BinEdFileHandler;
 import org.exbin.framework.bined.BinedModule;
+import org.exbin.framework.bined.gui.BinEdComponentFileApi;
 import org.exbin.framework.bined.macro.operation.CodeAreaMacroCommandHandler;
 import org.exbin.framework.bined.macro.operation.MacroStep;
 import org.exbin.framework.bined.search.BinEdComponentSearch;
@@ -101,7 +102,7 @@ public class FindReplaceActions implements FileDependentAction {
                         throw new IllegalStateException();
                     }
 
-                    BinEdComponentPanel activePanel = ((BinEdFileHandler) activeFile.get()).getComponent();
+                    BinEdComponentPanel activePanel = ((BinEdComponentFileApi) activeFile.get()).getEditorComponent().getComponentPanel();
                     BinEdComponentSearch componentExtension = activePanel.getComponentExtension(BinEdComponentSearch.class);
                     componentExtension.showSearchPanel(BinarySearchPanel.PanelMode.FIND);
                 }
@@ -137,7 +138,7 @@ public class FindReplaceActions implements FileDependentAction {
                         throw new IllegalStateException();
                     }
 
-                    BinEdComponentPanel activePanel = ((BinEdFileHandler) activeFile.get()).getComponent();
+                    BinEdComponentPanel activePanel = ((BinEdComponentFileApi) activeFile.get()).getEditorComponent().getComponentPanel();
                     BinEdComponentSearch componentExtension = activePanel.getComponentExtension(BinEdComponentSearch.class);
                     componentExtension.performFindAgain();
 
@@ -176,7 +177,7 @@ public class FindReplaceActions implements FileDependentAction {
                         throw new IllegalStateException();
                     }
 
-                    BinEdComponentPanel activePanel = ((BinEdFileHandler) activeFile.get()).getComponent();
+                    BinEdComponentPanel activePanel = ((BinEdComponentFileApi) activeFile.get()).getEditorComponent().getComponentPanel();
                     BinEdComponentSearch componentExtension = activePanel.getComponentExtension(BinEdComponentSearch.class);
                     componentExtension.showSearchPanel(BinarySearchPanel.PanelMode.REPLACE);
                 }
@@ -209,7 +210,7 @@ public class FindReplaceActions implements FileDependentAction {
         addFindAgainListener(() -> {
             Optional<FileHandler> activeFile = editorProvider.getActiveFile();
             if (activeFile.isPresent()) {
-                BinEdFileHandler fileHandler = (BinEdFileHandler) activeFile.get();
+                BinEdComponentFileApi fileHandler = (BinEdComponentFileApi) activeFile.get();
                 ExtCodeArea codeArea = fileHandler.getCodeArea();
                 CodeAreaCommandHandler commandHandler = codeArea.getCommandHandler();
                 if (commandHandler instanceof CodeAreaMacroCommandHandler && ((CodeAreaMacroCommandHandler) commandHandler).isMacroRecording()) {

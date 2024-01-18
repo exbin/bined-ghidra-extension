@@ -30,7 +30,6 @@ import ghidra.app.events.*;
 import ghidra.app.nav.*;
 import ghidra.app.plugin.core.byteviewer.ByteBlockChangePluginEvent;
 import ghidra.app.plugin.core.byteviewer.ByteViewerLocationMemento;
-import ghidra.app.plugin.core.byteviewer.ByteViewerState;
 import ghidra.app.plugin.core.format.*;
 import ghidra.app.services.ClipboardService;
 import ghidra.app.services.ProgramManager;
@@ -47,6 +46,9 @@ import ghidra.util.HelpLocation;
 import ghidra.util.classfinder.ClassSearcher;
 import ghidra.util.datastruct.WeakDataStructureFactory;
 import ghidra.util.datastruct.WeakSet;
+import java.awt.Frame;
+import java.awt.Window;
+import org.exbin.bined.ghidra.main.BinEdManager;
 
 public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 		implements DomainObjectListener, Navigatable {
@@ -74,6 +76,13 @@ public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 	public ProgramByteViewerComponentProvider(PluginTool tool, AbstractByteViewerPlugin<?> plugin,
 			boolean isConnected) {
 		this(tool, plugin, "BinEd", isConnected);
+        BinEdManager binedManager = BinEdManager.getInstance();
+        Window activeWindow = tool.getActiveWindow();
+        Frame frame = (Frame) SwingUtilities.getWindowAncestor(activeWindow);
+        if (frame == null) {
+            frame = tool.getToolFrame();
+        }
+        binedManager.getApplication().setFrame(frame);
 	}
 
 	protected ProgramByteViewerComponentProvider(PluginTool tool,
@@ -88,7 +97,7 @@ public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 			addToToolbar();
 		}
 
-		decorationComponent = new DecoratorPanel(panel.getComponent(), isConnected);
+		decorationComponent = new DecoratorPanel(wrapperFile.getComponent(), isConnected);
 		clipboardProvider = new ByteViewerClipboardProvider(this, tool);
 		addToTool();
 
@@ -123,7 +132,7 @@ public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 
 	@Override
 	public void componentShown() {
-		// panel.refreshView();
+		// wrapperFile.refreshView();
 
 		if (currentLocation != null) {
 			setLocation(currentLocation);
@@ -135,7 +144,7 @@ public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 
 	@Override
 	public ActionContext getActionContext(MouseEvent event) {
-		ByteBlockInfo info = null; // panel.getCursorLocation();
+		ByteBlockInfo info = null; // wrapperFile.getCursorLocation();
 		if (info == null) {
 			return null;
 		}
@@ -186,7 +195,7 @@ public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 		ByteBlockSelection blockSelection = blockSet.getBlockSelection(selection);
 		clipboardProvider.setSelection(currentSelection);
 
-//		panel.setViewerSelection(blockSelection);
+//		wrapperFile.setViewerSelection(blockSelection);
 
 		if (notify) {
 			ProgramSelectionPluginEvent selectionEvent =
@@ -213,7 +222,7 @@ public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 		}
 
 		ByteBlockSelection highlight = blockSet.getBlockSelection(currentHighlight);
-//		panel.setViewerHighlight(highlight);
+//		wrapperFile.setViewerHighlight(highlight);
 		contextChanged();
 		plugin.highlightChanged(this, newHighlight);
 
@@ -290,7 +299,7 @@ public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 
 	@Override
 	public LocationMemento getMemento() {
-		ByteBlockInfo info = null; // panel.getCursorLocation();
+		ByteBlockInfo info = null; // wrapperFile.getCursorLocation();
 		int blockNumber = -1;
 		BigInteger blockOffset = null;
 		int column = 0;
@@ -301,7 +310,7 @@ public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 			column = info.getColumn();
 		}
 
-		ViewerPosition vp = new ViewerPosition(0, 0, 0); // panel.getViewerPosition();
+		ViewerPosition vp = new ViewerPosition(0, 0, 0); // wrapperFile.getViewerPosition();
 		return new ByteViewerLocationMemento(program, currentLocation, blockNumber, blockOffset,
 			column, vp);
 	}
@@ -319,7 +328,7 @@ public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 		if (blocks != null && blockNumber >= 0 && blockNumber < blocks.length) {
 			ByteViewerState view = new ByteViewerState(blockSet,
 				new ByteBlockInfo(blocks[blockNumber], blockOffset, column), vp);
-			// panel.restoreView(view);
+			// wrapperFile.restoreView(view);
 		}
 
 	}
@@ -364,7 +373,7 @@ public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 
 	@Override
 	public void requestFocus() {
-		// panel.getCurrentComponent().requestFocus();
+		// wrapperFile.getCurrentComponent().requestFocus();
 		tool.toFront(this);
 	}
 
@@ -411,7 +420,7 @@ public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 			column = location.getCharOffset();
 		}
 
-		// panel.setCursorLocation(block, blockOffset, column);
+		// wrapperFile.setCursorLocation(block, blockOffset, column);
 		Address blockSetAddress = blockSet.getAddress(block, blockOffset);
 		if (blockSetAddress == null) {
 			return; // this can happen during an undo
@@ -530,7 +539,7 @@ public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 	 * @return the text
 	 */
 	String getCurrentTextSelection() {
-		return ""; // panel.getCurrentComponent().getTextForSelection();
+		return ""; // wrapperFile.getCurrentComponent().getTextForSelection();
 	}
 
 	@Override
@@ -587,7 +596,7 @@ public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 
 		blockSet = newByteBlockSet(changeManager);
         notifyBlockSetChanged();
-		// panel.setByteBlocks(blockSet);
+		// wrapperFile.setByteBlocks(blockSet);
 	}
 
 	@Override
@@ -631,7 +640,7 @@ public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 		if (blocks != null && blockNumber >= 0 && blockNumber < blocks.length) {
 			ByteViewerState view = new ByteViewerState(blockSet,
 				new ByteBlockInfo(blocks[blockNumber], blockOffset, column), vp);
-//			panel.restoreView(view);
+//			wrapperFile.restoreView(view);
 		}
 	}
 
@@ -652,7 +661,7 @@ public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 
 	protected void writeDataState(SaveState saveState) {
 		saveState.putLong("NAV_ID", getInstanceID());
-		ByteBlockInfo info = null; // panel.getCursorLocation();
+		ByteBlockInfo info = null; // wrapperFile.getCursorLocation();
 		int blockNumber = -1;
 		String blockOffset = "0";
 		int column = 0;
@@ -666,7 +675,7 @@ public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 		saveState.putString(BLOCK_OFFSET, blockOffset);
 		saveState.putInt(BLOCK_COLUMN, column);
 
-//		ViewerPosition vp = panel.getViewerPosition();
+//		ViewerPosition vp = wrapperFile.getViewerPosition();
 //		saveState.putInt(INDEX, vp.getIndexAsInt());
 //		saveState.putInt(X_OFFSET, vp.getXOffset());
 //		saveState.putInt(Y_OFFSET, vp.getYOffset());
@@ -735,8 +744,8 @@ public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 		newProvider.setLocation(currentLocation);
 		newProvider.setSelection(currentSelection, false);
 		newProvider.setHighlight(currentHighlight);
-		// ViewerPosition viewerPosition = panel.getViewerPosition();
-		// newProvider.panel.setViewerPosition(viewerPosition);
+		// ViewerPosition viewerPosition = wrapperFile.getViewerPosition();
+		// newProvider.wrapperFile.setViewerPosition(viewerPosition);
 	}
 
 //==================================================================================================

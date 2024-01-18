@@ -463,7 +463,7 @@ public class BinEdManager {
                 JMenu showMenu = new JMenu("Show");
                 showMenu.add(createShowHeaderMenuItem(codeArea));
                 showMenu.add(createShowRowPositionMenuItem(codeArea));
-                showMenu.add(createShowInspectorPanel(editorComponent.getComponentPanel()));
+//                showMenu.add(createShowInspectorPanel(editorComponent.getComponentPanel()));
                 menu.add(showMenu);
                 menu.addSeparator();
             }

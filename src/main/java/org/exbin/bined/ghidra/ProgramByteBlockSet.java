@@ -22,7 +22,6 @@ import java.util.List;
 import ghidra.app.events.ProgramLocationPluginEvent;
 import ghidra.app.events.ProgramSelectionPluginEvent;
 import ghidra.app.plugin.core.byteviewer.ByteBlockChangePluginEvent;
-import ghidra.app.plugin.core.byteviewer.MemoryByteBlock;
 import ghidra.app.plugin.core.format.*;
 import ghidra.framework.options.SaveState;
 import ghidra.program.model.address.*;

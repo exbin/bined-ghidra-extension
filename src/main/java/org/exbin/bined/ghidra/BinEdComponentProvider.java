@@ -39,10 +39,9 @@ import ghidra.framework.plugintool.PluginTool;
 import ghidra.util.*;
 import ghidra.util.classfinder.ClassSearcher;
 import ghidra.util.task.SwingUpdateManager;
-import org.exbin.auxiliary.binary_data.EmptyBinaryData;
 import org.exbin.bined.ghidra.action.OptionsAction;
 import org.exbin.bined.ghidra.main.BinEdManager;
-import org.exbin.framework.bined.BinEdEditorComponent;
+import org.exbin.bined.ghidra.main.BinEdWrapperFile;
 import org.exbin.framework.bined.BinEdFileManager;
 
 public abstract class BinEdComponentProvider extends ComponentProviderAdapter
@@ -86,7 +85,7 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
     private static final String OPTION_HIGHLIGHT_CURSOR_LINE
             = GhidraOptions.HIGHLIGHT_CURSOR_LINE_OPTION_NAME;
 
-    protected BinEdEditorComponent panel;
+    protected BinEdWrapperFile wrapperFile;
 
     private int bytesPerLine;
     private int offset;
@@ -113,11 +112,11 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
 
         initializedDataFormatModelClassMap();
 
-        panel = new BinEdEditorComponent();
+        wrapperFile = new BinEdWrapperFile();
         BinEdManager binEdManager = BinEdManager.getInstance();
         BinEdFileManager fileManager = binEdManager.getFileManager();
-        fileManager.initComponentPanel(panel.getComponentPanel());
-        binEdManager.initEditorComponent(panel);
+        fileManager.initComponentPanel(wrapperFile.getEditorComponent().getComponentPanel());
+        binEdManager.initFileHandler(wrapperFile);
 
         bytesPerLine = DEFAULT_BYTES_PER_LINE;
         setIcon(new GIcon("icon.plugin.byteviewer.provider"));
@@ -143,7 +142,7 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
 		optionsAction = new DockingAction("BinEd Plugin Options", plugin.getName()) {
             @Override
             public void actionPerformed(ActionContext ac) {
-                new OptionsAction(panel.getComponentPanel(), null, BinEdManager.getInstance().getPreferences()).actionPerformed(null);
+                new OptionsAction(wrapperFile.getEditorComponent().getComponentPanel(), null, BinEdManager.getInstance().getPreferences()).actionPerformed(null);
             }
         };
 
@@ -153,7 +152,7 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
 
     @Override
     public JComponent getComponent() {
-        return panel.getComponent();
+        return wrapperFile.getComponent();
     }
 
     @Override
@@ -166,7 +165,7 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
     }
 
     protected void notifyBlockSetChanged() {
-        panel.getCodeArea().setContentData(blockSet == null ? EmptyBinaryData.INSTANCE : new ByteBlocksBinaryData(blockSet));
+        wrapperFile.openFile(blockSet);
     }
 
     /**
@@ -187,16 +186,16 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
         } else if (options.getName().equals(CATEGORY_BROWSER_FIELDS)) {
             if (optionName.equals(CURSOR_HIGHLIGHT_BUTTON_NAME)) {
                 CURSOR_MOUSE_BUTTON_NAMES mouseButton = (CURSOR_MOUSE_BUTTON_NAMES) newValue;
-//				panel.setHighlightButton(mouseButton.getMouseEventID());
+//				wrapperFile.setHighlightButton(mouseButton.getMouseEventID());
             } else if (optionName.equals(HIGHLIGHT_COLOR_NAME)) {
-//				panel.setMouseButtonHighlightColor((Color) newValue);
+//				wrapperFile.setMouseButtonHighlightColor((Color) newValue);
             }
         }
     }
 
     private void setFont(Font font) {
-//        FontMetrics fm = panel.getFontMetrics(font);
-//		panel.setFontMetrics(fm);
+//        FontMetrics fm = wrapperFile.getFontMetrics(font);
+//		wrapperFile.setFontMetrics(fm);
         tool.setConfigChanged(true);
     }
 
@@ -214,22 +213,22 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
             newOffset = newOffset % bytesPerLine;
         }
         this.offset = newOffset;
-//		panel.setOffset(newOffset);
+//		wrapperFile.setOffset(newOffset);
         tool.setConfigChanged(true);
     }
 
     ByteBlockInfo getCursorLocation() {
         throw new UnsupportedOperationException("Not supported yet.");
-//		return panel.getCursorLocation();
+//		return wrapperFile.getCursorLocation();
     }
 
     ByteBlockSelection getBlockSelection() {
         throw new UnsupportedOperationException("Not supported yet.");
-//		return panel.getViewerSelection();
+//		return wrapperFile.getViewerSelection();
     }
 
     void setBlockSelection(ByteBlockSelection selection) {
-//		panel.setViewerSelection(selection);
+//		wrapperFile.setViewerSelection(selection);
     }
 
     ByteBlockSet getByteBlockSet() {
@@ -271,7 +270,7 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
         if (component != null) {
 //			component.setGroupSize(groupSize);
 //			component.invalidate();
-            panel.getComponent().repaint();
+            wrapperFile.getComponent().repaint();
         }
         tool.setConfigChanged(true);
     }
@@ -279,13 +278,13 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
     void setBytesPerLine(int bytesPerLine) {
         if (this.bytesPerLine != bytesPerLine) {
             this.bytesPerLine = bytesPerLine;
-//			panel.setBytesPerLine(bytesPerLine);
+//			wrapperFile.setBytesPerLine(bytesPerLine);
             tool.setConfigChanged(true);
         }
     }
 
     protected void writeConfigState(SaveState saveState) {
-//		DataModelInfo info = panel.getDataModelInfo();
+//		DataModelInfo info = wrapperFile.getDataModelInfo();
 //		saveState.putStrings(VIEW_NAMES, info.getNames());
 //		saveState.putInt(HEX_VIEW_GROUPSIZE, hexGroupSize);
 //		saveState.putInt(BYTES_PER_LINE_NAME, bytesPerLine);
@@ -335,9 +334,9 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
 
         String viewName = model.getName();
 
-        BinedFieldPanel fieldPanel = new BinedFieldPanel(panel, new ByteViewerLayoutModel(), model, bytesPerLine);
+        BinedFieldPanel fieldPanel = new BinedFieldPanel(wrapperFile.getEditorComponent(), new ByteViewerLayoutModel(), model, bytesPerLine);
 
-//			panel.addView(viewName, model, editModeAction.isSelected(), updateViewPosition);
+//			wrapperFile.addView(viewName, model, editModeAction.isSelected(), updateViewPosition);
         viewMap.put(viewName, fieldPanel);
         if (configChanged) {
             tool.setConfigChanged(true);
@@ -375,7 +374,7 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
     }
 
     public Set<String> getCurrentViews() {
-//		DataModelInfo info = panel.getDataModelInfo();
+//		DataModelInfo info = wrapperFile.getDataModelInfo();
         HashSet<String> currentViewNames = new HashSet<>(); // Arrays.asList(info.getNames()));
         return currentViewNames;
     }
@@ -386,7 +385,7 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
         }
 
         if (tool.isVisible(this)) {
-//			panel.refreshView();
+//			wrapperFile.refreshView();
         }
 
     }
@@ -401,7 +400,7 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
     }
 
     void setEditMode(boolean isEditable) {
-//		panel.setEditMode(isEditable);
+//		wrapperFile.setEditMode(isEditable);
     }
 
     protected Set<DataFormatModel> getDataFormatModels() {
@@ -436,20 +435,20 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
     }
 
     /**
-     * Add the {@link AddressSetDisplayListener} to the byte viewer panel
+     * Add the {@link AddressSetDisplayListener} to the byte viewer wrapperFile
      *
      * @param listener the listener to add
      */
     public void addDisplayListener(AddressSetDisplayListener listener) {
-//		panel.addDisplayListener(listener);
+//		wrapperFile.addDisplayListener(listener);
     }
 
     /**
-     * Remove the {@link AddressSetDisplayListener} from the byte viewer panel
+     * Remove the {@link AddressSetDisplayListener} from the byte viewer wrapperFile
      *
      * @param listener the listener to remove
      */
     public void removeDisplayListener(AddressSetDisplayListener listener) {
-//		panel.removeDisplayListener(listener);
+//		wrapperFile.removeDisplayListener(listener);
     }
 }

@@ -27,6 +27,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.exbin.auxiliary.binary_data.BinaryData;
 import org.exbin.auxiliary.binary_data.ByteArrayEditableData;
+import org.exbin.auxiliary.binary_data.EditableBinaryData;
+import org.exbin.auxiliary.binary_data.OutOfBoundsException;
 
 /**
  * Binary data convertor for block set.
@@ -34,7 +36,7 @@ import org.exbin.auxiliary.binary_data.ByteArrayEditableData;
  * @author ExBin Project (https://exbin.org)
  */
 @ParametersAreNonnullByDefault
-public class ByteBlocksBinaryData implements BinaryData {
+public class ByteBlocksBinaryData implements EditableBinaryData {
 
     private final ProgramByteBlockSet blockSet;
 
@@ -104,15 +106,155 @@ public class ByteBlocksBinaryData implements BinaryData {
 
     @Override
     public void saveToStream(OutputStream outputStream) throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public InputStream getDataInputStream() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void dispose() {
+    }
+
+    @Override
+    public void setDataSize(long size) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setByte(long position, byte value) {
+        int transaction = blockSet.startTransaction();
+        setByteInt(position, value);
+        blockSet.endTransaction(transaction, true);
+    }
+
+    @Override
+    public void insertUninitialized(long startFrom, long length) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void insert(long startFrom, long length) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void insert(long startFrom, byte[] insertedData) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void insert(long startFrom, byte[] insertedData, int insertedDataOffset, int insertedDataLength) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void insert(long startFrom, BinaryData insertedData) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void insert(long startFrom, BinaryData insertedData, long insertedDataOffset, long insertedDataLength) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public long insert(long startFrom, InputStream inputStream, long maximumDataSize) throws IOException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void replace(long targetPosition, BinaryData replacingData) {
+        replace(targetPosition, replacingData, 0, replacingData.getDataSize());
+    }
+
+    @Override
+    public void replace(long targetPosition, BinaryData replacingData, long startFrom, long length) {
+        if (targetPosition + length > getDataSize()) {
+            throw new OutOfBoundsException("Data can be replaced only inside or at the end");
+        }
+
+        int transaction = blockSet.startTransaction();
+        while (length > 0) {
+            setByte(targetPosition, replacingData.getByte(startFrom));
+
+            length--;
+            targetPosition++;
+            startFrom++;
+        }
+        blockSet.endTransaction(transaction, true);
+    }
+
+    @Override
+    public void replace(long targetPosition, byte[] replacingData) {
+        replace(targetPosition, replacingData, 0, replacingData.length);
+    }
+
+    @Override
+    public void replace(long targetPosition, byte[] replacingData, int replacingDataOffset, int length) {
+        if (targetPosition + length > getDataSize()) {
+            throw new OutOfBoundsException("Data can be replaced only inside or at the end");
+        }
+
+        int transaction = blockSet.startTransaction();
+        while (length > 0) {
+            setByte(targetPosition, replacingData[replacingDataOffset]);
+
+            length--;
+            targetPosition++;
+            replacingDataOffset++;
+        }
+        blockSet.endTransaction(transaction, true);
+    }
+
+    @Override
+    public void fillData(long startFrom, long length) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void fillData(long startFrom, long length, byte fill) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void remove(long startFrom, long length) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void clear() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void loadFromStream(InputStream inputStream) throws IOException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public OutputStream getDataOutputStream() {
+        throw new UnsupportedOperationException();
+    }
+    
+    private void setByteInt(long position, byte value) {
+        long blockPosition = position;
+        for (ByteBlock block : blockSet.getBlocks()) {
+            long blockLength = block.getLength().longValue();
+            if (blockPosition < blockLength) {
+                try {
+                    block.setByte(BigInteger.valueOf(blockPosition), value);
+                    return;
+                } catch (ByteBlockAccessException ex) {
+                    throw new IllegalStateException(ex);
+                }
+            }
+
+            blockPosition -= blockLength;
+        }
+
+        throw new IllegalStateException();
     }
 }

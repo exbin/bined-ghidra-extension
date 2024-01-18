@@ -31,7 +31,6 @@ import docking.widgets.fieldpanel.listener.*;
 import docking.widgets.fieldpanel.support.*;
 import generic.theme.GColor;
 import ghidra.app.plugin.core.byteviewer.ByteField;
-import ghidra.app.plugin.core.byteviewer.ByteViewerHighlighter;
 import ghidra.app.plugin.core.byteviewer.ByteViewerLayoutModel;
 import ghidra.app.plugin.core.byteviewer.ByteViewerPanel;
 import ghidra.app.plugin.core.byteviewer.IndexMap;

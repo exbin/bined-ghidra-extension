@@ -43,8 +43,8 @@ import org.exbin.framework.utils.ActionUtils;
 import org.exbin.framework.utils.WindowUtils;
 import org.exbin.framework.utils.gui.CloseControlPanel;
 import org.exbin.framework.editor.api.EditorProvider;
-import org.exbin.framework.bined.BinEdFileHandler;
 import org.exbin.framework.bined.BinedModule;
+import org.exbin.framework.bined.gui.BinEdComponentFileApi;
 import org.exbin.framework.file.api.FileHandler;
 import org.exbin.framework.frame.api.FrameModuleApi;
 
@@ -93,7 +93,7 @@ public class CompareFilesAction extends AbstractAction {
         controlPanel.setHandler(dialog::close);
         Optional<FileHandler> activeFile = editorProvider.getActiveFile();
         if (activeFile.isPresent()) {
-            compareFilesPanel.setLeftFile(((BinEdFileHandler) activeFile.get()).getCodeArea().getContentData());
+            compareFilesPanel.setLeftFile(((BinEdComponentFileApi) activeFile.get()).getCodeArea().getContentData());
         }
 
 //        List<FileHandler> fileHandlers;

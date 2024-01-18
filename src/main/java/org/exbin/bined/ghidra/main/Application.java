@@ -54,7 +54,10 @@ public class Application implements XBApplication {
     private BinedModule binedModule = new BinedModule();
     private Preferences preferences = new BinEdPreferencesWrapper(new SaveState());
 
+    private Frame frame;
+
     private FrameModuleApi frameModule = new FrameModuleApi() {
+
         @Override
         public void createMainMenu() {
             throw new UnsupportedOperationException("Not supported yet.");
@@ -118,7 +121,7 @@ public class Application implements XBApplication {
 
         @Override
         public Frame getFrame() {
-            return null;
+            return frame;
         }
 
         @Override
@@ -179,6 +182,10 @@ public class Application implements XBApplication {
     @Nonnull
     public Optional<Image> getApplicationIcon() {
         return Optional.empty();
+    }
+
+    public void setFrame(Frame frame) {
+        this.frame = frame;
     }
 
     @Nonnull

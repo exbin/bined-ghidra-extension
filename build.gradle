@@ -127,6 +127,7 @@ dependencies {
     compileOnly ':ghidra-help'
     compileOnly ':ghidra-softwaremodeling'
     compileOnly ':ghidra-utility'
+    compileOnly ':ghidra-byteviewer'
 
     implementation binedLibrary('bined-core')
     implementation binedLibrary('bined-extended')
