@@ -39,7 +39,7 @@ import ghidra.framework.plugintool.PluginTool;
 import ghidra.util.*;
 import ghidra.util.classfinder.ClassSearcher;
 import ghidra.util.task.SwingUpdateManager;
-import org.exbin.auxiliary.paged_data.EmptyBinaryData;
+import org.exbin.auxiliary.binary_data.EmptyBinaryData;
 import org.exbin.bined.ghidra.main.BinEdEditorComponent;
 import org.exbin.bined.ghidra.main.BinEdFileManager;
 import org.exbin.bined.ghidra.main.BinEdManager;

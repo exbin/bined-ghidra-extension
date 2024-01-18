@@ -15,7 +15,7 @@
  */
 package org.exbin.bined.ghidra.main;
 
-import org.exbin.auxiliary.paged_data.delta.SegmentsRepository;
+import org.exbin.auxiliary.binary_data.delta.SegmentsRepository;
 import org.exbin.bined.ghidra.gui.BinEdComponentPanel;
 import org.exbin.bined.swing.CodeAreaCore;
 import org.exbin.bined.swing.capability.FontCapable;

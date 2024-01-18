@@ -21,8 +21,8 @@ sourceCompatibility = '17'
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
 ext {
-    binedVersion = '0.2.1-SNAPSHOT'
-    pagedDataVersion = '0.2.1-SNAPSHOT'
+    binedVersion = '0.2.1'
+    binaryDataVersion = '0.2.1'
 }
 
 tasks.withType(JavaCompile) {
@@ -104,13 +104,11 @@ task buildPack (type: Zip, dependsOn: tasks.jar) {
 // publish.dependsOn buildPack
 
 def binedLibrary = { String libName ->
-    return ":${libName}-${binedVersion}"
-//    return "org.exbin.bined:${libName}:${binedVersion}"
+    return (libName.endsWith('-SNAPSHOT')) ? ":${libName}-${binedVersion}" : "org.exbin.bined:${libName}:${binedVersion}"
 }
 
-def pagedDataLibrary = { String libName ->
-    return ":${libName}-${pagedDataVersion}"
-//    return "org.exbin.auxiliary:${libName}:${pagedDataVersion}"
+def binaryDataLibrary = { String libName ->
+    return (libName.endsWith('-SNAPSHOT')) ? ":${libName}-${binaryDataVersion}" : "org.exbin.auxiliary:${libName}:${binaryDataVersion}"
 }
 
 repositories {
@@ -137,14 +135,15 @@ dependencies {
     implementation binedLibrary('bined-operation-swing')
     implementation binedLibrary('bined-swing')
     implementation binedLibrary('bined-swing-extended')
-    implementation pagedDataLibrary('paged_data')
-    implementation pagedDataLibrary('paged_data-delta')
+    implementation binaryDataLibrary('binary_data')
+    implementation binaryDataLibrary('binary_data-paged')
+    implementation binaryDataLibrary('binary_data-delta')
 
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
     implementation group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.70'
     implementation "org.jdom:jdom-legacy:1.1.3"
 
-    testImplementation group : 'junit', name: 'junit', version: '4.10'
+    testImplementation group : 'junit', name: 'junit', version: '4.13.2'
 }
 
 jar {

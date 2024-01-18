@@ -15,8 +15,8 @@
  */
 package org.exbin.bined.ghidra.main;
 
-import org.exbin.auxiliary.paged_data.BinaryData;
-import org.exbin.auxiliary.paged_data.delta.DeltaDocument;
+import org.exbin.auxiliary.binary_data.BinaryData;
+import org.exbin.auxiliary.binary_data.delta.DeltaDocument;
 import org.exbin.bined.CodeAreaCaretPosition;
 import org.exbin.bined.CodeType;
 import org.exbin.bined.EditMode;
