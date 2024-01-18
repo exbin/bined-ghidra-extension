@@ -18,6 +18,7 @@ package org.exbin.framework.bined.preferences;
 import org.exbin.framework.api.Preferences;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.exbin.bined.ghidra.preferences.IntegrationPreferences;
 import org.exbin.framework.bined.inspector.preferences.DataInspectorPreferences;
 import org.exbin.framework.editor.text.preferences.TextEncodingPreferences;
 import org.exbin.framework.editor.text.preferences.TextFontPreferences;
@@ -35,7 +36,7 @@ public class BinaryEditorPreferences {
 
     private final Preferences preferences;
 
-//    private final IntegrationPreferences integrationPreferences;
+    private final IntegrationPreferences integrationPreferences;
     private final EditorPreferences editorPreferences;
     private final StatusPreferences statusPreferences;
     private final CodeAreaPreferences codeAreaPreferences;
@@ -49,7 +50,7 @@ public class BinaryEditorPreferences {
     public BinaryEditorPreferences(Preferences preferences) {
         this.preferences = preferences;
 
-//        integrationPreferences = new IntegrationPreferences(preferences);
+        integrationPreferences = new IntegrationPreferences(preferences);
         editorPreferences = new EditorPreferences(preferences);
         statusPreferences = new StatusPreferences(preferences);
         codeAreaPreferences = new CodeAreaPreferences(preferences);
@@ -66,10 +67,11 @@ public class BinaryEditorPreferences {
         return preferences;
     }
 
-//    @Nonnull
-//    public IntegrationPreferences getIntegrationPreferences() {
-//        return integrationPreferences;
-//    }
+    @Nonnull
+    public IntegrationPreferences getIntegrationPreferences() {
+        return integrationPreferences;
+    }
+
     @Nonnull
     public EditorPreferences getEditorPreferences() {
         return editorPreferences;

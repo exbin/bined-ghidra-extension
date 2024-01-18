@@ -43,8 +43,7 @@ import ghidra.util.Msg;
 import help.Help;
 import help.HelpService;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.exbin.bined.ghidra.gui.BinEdComponentPanel;
-import org.exbin.bined.ghidra.main.BinEdEditorComponent;
+import org.exbin.framework.bined.BinEdEditorComponent;
 
 /**
  * BinEd component FieldViewer.

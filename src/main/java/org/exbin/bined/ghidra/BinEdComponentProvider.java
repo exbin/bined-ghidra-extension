@@ -40,16 +40,13 @@ import ghidra.util.*;
 import ghidra.util.classfinder.ClassSearcher;
 import ghidra.util.task.SwingUpdateManager;
 import org.exbin.auxiliary.binary_data.EmptyBinaryData;
-import org.exbin.bined.ghidra.main.BinEdEditorComponent;
-import org.exbin.bined.ghidra.main.BinEdFileManager;
+import org.exbin.bined.ghidra.action.OptionsAction;
 import org.exbin.bined.ghidra.main.BinEdManager;
-import org.exbin.bined.ghidra.main.BinEdPreferencesWrapper;
-import org.exbin.framework.bined.preferences.BinaryEditorPreferences;
+import org.exbin.framework.bined.BinEdEditorComponent;
+import org.exbin.framework.bined.BinEdFileManager;
 
 public abstract class BinEdComponentProvider extends ComponentProviderAdapter
         implements OptionsChangeListener {
-
-    private final BinaryEditorPreferences preferences = new BinaryEditorPreferences(new BinEdPreferencesWrapper(new SaveState()));
 
     protected static final String BLOCK_NUM = "Block Num";
     protected static final String BLOCK_OFFSET = "Block Offset";
@@ -116,11 +113,11 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
 
         initializedDataFormatModelClassMap();
 
+        panel = new BinEdEditorComponent();
         BinEdManager binEdManager = BinEdManager.getInstance();
-        binEdManager.setPreferences(preferences);
-        BinEdFileManager binEdFileManager = binEdManager.getFileManager();
-        panel = binEdManager.createBinEdEditor();
-        binEdFileManager.initComponentPanel(panel.getComponentPanel());
+        BinEdFileManager fileManager = binEdManager.getFileManager();
+        fileManager.initComponentPanel(panel.getComponentPanel());
+        binEdManager.initEditorComponent(panel);
 
         bytesPerLine = DEFAULT_BYTES_PER_LINE;
         setIcon(new GIcon("icon.plugin.byteviewer.provider"));
@@ -146,7 +143,7 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
 		optionsAction = new DockingAction("BinEd Plugin Options", plugin.getName()) {
             @Override
             public void actionPerformed(ActionContext ac) {
-                BinEdManager.getInstance().createOptionsAction(panel).actionPerformed(null);
+                new OptionsAction(panel.getComponentPanel(), null, BinEdManager.getInstance().getPreferences()).actionPerformed(null);
             }
         };
 

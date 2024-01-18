@@ -25,7 +25,7 @@ import org.exbin.auxiliary.binary_data.EditableBinaryData;
 import org.exbin.bined.CodeAreaUtils;
 
 /**
- * Parameters for action to search for occurences of text or data.
+ * Parameters for action to search for occurrences of text or data.
  *
  * @author ExBin Project (https://exbin.org)
  */

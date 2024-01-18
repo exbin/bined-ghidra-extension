@@ -113,7 +113,7 @@ public class CompareFilesPanel extends javax.swing.JPanel {
 
     public void setAvailableFiles(List<String> availableFiles) {
         DefaultComboBoxModel<String> leftComboBoxModel = new DefaultComboBoxModel<>();
-        leftComboBoxModel.addElement("Load file...");
+        leftComboBoxModel.addElement(resourceBundle.getString("loadFile"));
         // addAll not in Java 8
         for (String fileName : availableFiles) {
             leftComboBoxModel.addElement(fileName);
@@ -121,7 +121,7 @@ public class CompareFilesPanel extends javax.swing.JPanel {
         leftComboBox.setModel(leftComboBoxModel);
 
         DefaultComboBoxModel<String> rightComboBoxModel = new DefaultComboBoxModel<>();
-        rightComboBoxModel.addElement("Load file...");
+        rightComboBoxModel.addElement(resourceBundle.getString("loadFile"));
         for (String fileName : availableFiles) {
             rightComboBoxModel.addElement(fileName);
         }

@@ -17,6 +17,7 @@ package org.exbin.bined.ghidra.main;
 
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.exbin.bined.ghidra.options.IntegrationOptions;
 //import org.exbin.bined.ghidra.options.IntegrationOptions;
 import org.exbin.framework.bined.inspector.options.DataInspectorOptions;
 import org.exbin.framework.bined.options.CodeAreaColorOptions;
@@ -45,8 +46,8 @@ public interface BinEdApplyOptions {
     @Nonnull
     TextFontOptions getFontOptions();
 
-//    @Nonnull
-//    IntegrationOptions getIntegrationOptions();
+    @Nonnull
+    IntegrationOptions getIntegrationOptions();
 
     @Nonnull
     EditorOptions getEditorOptions();
