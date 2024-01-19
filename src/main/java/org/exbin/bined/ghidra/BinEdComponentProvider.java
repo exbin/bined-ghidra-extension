@@ -59,18 +59,18 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
     private static final String OFFSET_NAME = "Offset";
     static final int DEFAULT_NUMBER_OF_CHARS = 8;
 
-    static final String DEFAULT_FONT_ID = "font.byteviewer";
+    static final String DEFAULT_FONT_ID = "font.binedextension";
     static final int DEFAULT_BYTES_PER_LINE = 16;
 
     //@formatter:off
-    static final String FG = "byteviewer.color.fg";
-    static final String CURSOR = "byteviewer.color.cursor";
+    static final String FG = "binedextension.color.fg";
+    static final String CURSOR = "binedextension.color.cursor";
 
-    static final GColor SEPARATOR_COLOR = new GColor("color.fg.byteviewer.separator");
-    static final GColor CHANGED_VALUE_COLOR = new GColor("color.fg.byteviewer.changed");
-    static final GColor CURSOR_ACTIVE_COLOR = new GColor("color.cursor.byteviewer.focused.active");
-    static final GColor CURSOR_NON_ACTIVE_COLOR = new GColor("color.cursor.byteviewer.focused.not.active");
-    static final GColor CURSOR_NOT_FOCUSED_COLOR = new GColor("color.cursor.byteviewer.unfocused");
+    static final GColor SEPARATOR_COLOR = new GColor("color.fg.binedextension.separator");
+    static final GColor CHANGED_VALUE_COLOR = new GColor("color.fg.binedextension.changed");
+    static final GColor CURSOR_ACTIVE_COLOR = new GColor("color.cursor.binedextension.focused.active");
+    static final GColor CURSOR_NON_ACTIVE_COLOR = new GColor("color.cursor.binedextension.focused.not.active");
+    static final GColor CURSOR_NOT_FOCUSED_COLOR = new GColor("color.cursor.binedextension.unfocused");
 
     static final GColor CURRENT_LINE_COLOR = GhidraOptions.DEFAULT_CURSOR_LINE_COLOR;
     //@formatter:on
@@ -119,7 +119,7 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
         binEdManager.initFileHandler(wrapperFile);
 
         bytesPerLine = DEFAULT_BYTES_PER_LINE;
-        setIcon(new GIcon("icon.plugin.byteviewer.provider"));
+        setIcon(new GIcon("icon.plugin.binedextension.provider"));
 
         createActions();
 
@@ -231,7 +231,7 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
 //		wrapperFile.setViewerSelection(selection);
     }
 
-    ByteBlockSet getByteBlockSet() {
+    public ByteBlockSet getByteBlockSet() {
         return blockSet;
     }
 

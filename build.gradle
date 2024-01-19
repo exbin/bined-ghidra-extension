@@ -14,7 +14,7 @@ plugins {
 }
 import org.gradle.util.VersionNumber
 
-version = '0.2.0-SNAPSHOT'
+version = '0.2.0'
 
 sourceCompatibility = '17'
 
@@ -27,17 +27,6 @@ ext {
 
 tasks.withType(JavaCompile) {
     options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
-    doFirst {
-        options.fork = true
-        if (JavaVersion.current() == JavaVersion.VERSION_1_8) {
-            if (VersionNumber.parse(gradle.gradleVersion) >= VersionNumber.parse('5.0')) {
-                options.bootstrapClasspath = files("${System.properties['java.home']}/lib/rt.jar", "$File.pathSeparator${System.properties['java.home']}/jre/lib/jsse.jar")
-            } else {
-                options.bootClasspath = "${System.properties['java.home']}/lib/rt.jar"
-                options.bootClasspath += "$File.pathSeparator${System.properties['java.home']}/jre/lib/jsse.jar"
-            }
-        }
-    }
 }
 
 // Disable tests on build
@@ -83,12 +72,17 @@ task buildPack (type: Zip, dependsOn: tasks.jar) {
     archiveBaseName = "bined-ghidra-extension"
     
     into ('BinedExtension') {
+        duplicatesStrategy = 'exclude'
         from (jar) {
             into 'lib'
             rename { filename -> "BinedExtension.jar" }
         }
 
         from (configurations.runtimeClasspath) {
+            include 'bined*.jar'
+            include 'binary_data*.jar'
+            include 'jdom-legacy*.jar'
+            include 'bcprov-jdk15on-1.70.jar'
             into 'lib'
         }
 
@@ -97,9 +91,11 @@ task buildPack (type: Zip, dependsOn: tasks.jar) {
         }
         
         from 'Module.manifest'
+        from 'certification.manifest'
         from 'extension.properties'
         from 'LICENSE.txt'
     }
+    from 'src/dist/readme.txt'
 }
 // publish.dependsOn buildPack
 
@@ -118,17 +114,31 @@ repositories {
     }
 }
 
-dependencies {
-    compileOnly ':ghidra-project'
-    compileOnly ':ghidra-base'
-    compileOnly ':ghidra-generic'
-    compileOnly ':ghidra-gui'
-    compileOnly ':ghidra-docking'
-    compileOnly ':ghidra-help'
-    compileOnly ':ghidra-softwaremodeling'
-    compileOnly ':ghidra-utility'
-    compileOnly ':ghidra-byteviewer'
+def ghidraInstallDir
 
+if (System.env.GHIDRA_INSTALL_DIR) {
+    ghidraInstallDir = System.env.GHIDRA_INSTALL_DIR
+} else if (project.hasProperty("GHIDRA_INSTALL_DIR")) {
+    ghidraInstallDir = project.getProperty("GHIDRA_INSTALL_DIR")
+}
+
+if (ghidraInstallDir) {
+    if (gradle.startParameter.taskNames.contains('buildExtension')) {
+        apply from: new File(ghidraInstallDir).getCanonicalPath() + "/support/buildExtension.gradle"
+    }
+} else {
+    throw new GradleException("GHIDRA_INSTALL_DIR is not defined!")
+}
+
+dependencies {
+    compileOnly fileTree(dir: ghidraInstallDir + '/Ghidra/patch', include: "**/*.jar")
+    compileOnly fileTree(dir: ghidraInstallDir + '/Ghidra/Configurations', include: "**/*.jar")
+    compileOnly fileTree(dir: ghidraInstallDir + '/Ghidra/Features', include: "**/*.jar")
+    compileOnly fileTree(dir: ghidraInstallDir + '/Ghidra/Framework', include: "**/*.jar")
+    compileOnly fileTree(dir: ghidraInstallDir + '/Ghidra/Processors', include: "**/*.jar")
+    compileOnly fileTree(dir: ghidraInstallDir + '/Ghidra/Debug', include: "**/*.jar")
+    compileOnly fileTree(dir: ghidraInstallDir + '/Ghidra/Extensions',
+						 include: "**/*.jar", exclude: project.name)
     implementation binedLibrary('bined-core')
     implementation binedLibrary('bined-extended')
     implementation binedLibrary('bined-highlight-swing')
@@ -155,7 +165,4 @@ jar {
             'Main-Class': mainClass
         )
     }
-
-//    from configurations.compile.findAll { it.name != 'bluejext.jar' }.collect { it.isDirectory() ? it : zipTree(it) }
-//    destinationDir = file("$buildDir")
 }

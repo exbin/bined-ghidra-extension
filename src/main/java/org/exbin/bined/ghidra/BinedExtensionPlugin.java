@@ -42,7 +42,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
  *
  * @author ExBin Project (https://exbin.org)
  */
-@PluginInfo(status = PluginStatus.UNSTABLE, packageName = CorePluginPackage.NAME, category = PluginCategoryNames.BYTE_VIEWER, shortDescription = "Viewer / editor for binary data", description = "Viewer / editor for binary data using BinEd library",
+@PluginInfo(status = PluginStatus.STABLE, packageName = CorePluginPackage.NAME, category = PluginCategoryNames.BYTE_VIEWER, shortDescription = "Viewer / editor for binary data", description = "Viewer / editor for binary data using BinEd library",
         servicesRequired = {
             ProgramManager.class, GoToService.class, NavigationHistoryService.class,
             ClipboardService.class},

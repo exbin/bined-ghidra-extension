@@ -60,7 +60,7 @@ public class BinEdWrapperFile implements FileHandler, BinEdComponentFileApi, Tex
         CodeAreaUndoHandler undoHandler = new CodeAreaUndoHandler(codeArea);
         editorComponent.setUndoHandler(undoHandler);
 
-        // TODO undoHandler = new BinaryUndoIntelliJHandler(codeArea, project, this);
+        // TODO undoHandler = new UndoHandlerWrapper(codeArea, project, this);
 
 //        componentPanel.setModifiedChangeListener(() -> {
 //            updateModified();

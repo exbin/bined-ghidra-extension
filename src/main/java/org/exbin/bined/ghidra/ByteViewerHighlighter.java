@@ -24,7 +24,7 @@ public class ByteViewerHighlighter {
 
 	private static Highlight[] NO_HIGHLIGHTS = new Highlight[0];
 	private String highlightText;
-	private Color highlightColor = new GColor("color.bg.byteviewer.highlight");
+	private Color highlightColor = new GColor("color.bg.binedextension.highlight");
 
 	public Highlight[] createHighlights(String text) {
 

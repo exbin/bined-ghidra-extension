@@ -30,7 +30,7 @@ public enum FileHandlingMode {
      */
     DELTA,
     /**
-     * NetBeans native file wrapper.
+     * Native file wrapper.
      */
     NATIVE;
 }

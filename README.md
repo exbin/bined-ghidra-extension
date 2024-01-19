@@ -24,7 +24,17 @@ Features
 Compiling
 ---------
 
+Set GHIDRA_INSTALL_DIR property to path to Ghidra installation.
+
 Java Development Kit (JDK) version 17 or later is required to build this project.
+
+Run:
+
+`gradle buildPack`
+
+or
+
+`gradle buildExtension`
 
 License
 -------

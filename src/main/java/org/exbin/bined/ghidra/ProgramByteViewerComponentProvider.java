@@ -46,9 +46,19 @@ import ghidra.util.HelpLocation;
 import ghidra.util.classfinder.ClassSearcher;
 import ghidra.util.datastruct.WeakDataStructureFactory;
 import ghidra.util.datastruct.WeakSet;
+import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.Window;
+import java.io.File;
+import org.exbin.bined.ghidra.gui.BinEdToolbarPanel;
+import org.exbin.bined.ghidra.main.Application;
 import org.exbin.bined.ghidra.main.BinEdManager;
+import org.exbin.framework.bined.BinEdEditorComponent;
+import org.exbin.framework.bined.BinEdFileHandler;
+import org.exbin.framework.bined.BinEdFileManager;
+import org.exbin.framework.frame.api.FrameModuleApi;
+import org.exbin.framework.utils.WindowUtils;
+import org.exbin.framework.utils.gui.CloseControlPanel;
 
 public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 		implements DomainObjectListener, Navigatable {
@@ -60,6 +70,7 @@ public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 		WeakDataStructureFactory.createCopyOnWriteWeakSet();
 
 	private CloneByteViewerAction cloneByteViewerAction;
+	private OpenExternalAction openExternalAction;
 
 	protected Program program;
 	protected ProgramSelection currentSelection;
@@ -89,7 +100,7 @@ public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 			AbstractByteViewerPlugin<?> plugin, String name, boolean isConnected) {
 		super(tool, plugin, name, ByteViewerActionContext.class);
 		this.isConnected = isConnected;
-		setIcon(new GIcon("icon.plugin.byteviewer.provider"));
+		setIcon(new GIcon("icon.plugin.binedextension.provider"));
 		if (!isConnected) {
 			setTransient();
 		}
@@ -107,7 +118,9 @@ public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 	}
 
 	public void createProgramActions() {
+        openExternalAction = new OpenExternalAction();
 		cloneByteViewerAction = new CloneByteViewerAction();
+		tool.addLocalAction(this, openExternalAction);
 		tool.addLocalAction(this, cloneByteViewerAction);
 	}
 
@@ -258,7 +271,7 @@ public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 
 	protected void updateTitle() {
 		String title =
-			"Bytes: " + (program == null ? "No Program" : program.getDomainFile().getName());
+			"BinEd: " + (program == null ? "No Program" : program.getDomainFile().getName());
 		if (!isConnected()) {
 			title = "[" + title + "]";
 		}
@@ -759,7 +772,7 @@ public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 			Icon image = new GIcon("icon.provider.clone");
 			setToolBarData(new ToolBarData(image, "ZZZ"));
 
-			setDescription("Create a snapshot (disconnected) copy of this Bytes window ");
+			setDescription("Create a snapshot (disconnected) copy of this BinEd window ");
 			setHelpLocation(new HelpLocation("Snapshots", "Snapshots_Start"));
 			setKeyBindingData(new KeyBindingData(KeyEvent.VK_T,
 				InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
@@ -771,7 +784,63 @@ public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 		}
 	}
 
-	@Override
+	private class OpenExternalAction extends DockingAction {
+
+		public OpenExternalAction() {
+			super("Open External", plugin.getName());
+			Icon image = new GIcon("icon.plugin.binedextension.open");
+			setToolBarData(new ToolBarData(image, "ZZZ"));
+
+			setDescription("Open external file new BinEd dialog");
+		}
+
+		@Override
+		public void actionPerformed(ActionContext context) {
+            BinEdManager binedManager = BinEdManager.getInstance();
+            Application application = binedManager.getApplication();
+            FrameModuleApi frameModule = application.getModuleRepository().getModuleByInterface(FrameModuleApi.class);
+
+            JFileChooser fileChooser = new JFileChooser();
+            int dialogResult = fileChooser.showOpenDialog(frameModule.getFrame());
+            if (dialogResult == JFileChooser.APPROVE_OPTION) {
+                File file = fileChooser.getSelectedFile();
+                
+                BinEdFileManager fileManager = binedManager.getFileManager();
+                BinEdFileHandler fileHandler = new BinEdFileHandler();
+                fileManager.initFileHandler(fileHandler);
+                binedManager.initFileHandler(fileHandler);
+                
+                fileHandler.loadFromFile(file.toURI(), null);
+                BinEdEditorComponent editorComponent = fileHandler.getEditorComponent();
+                BinEdToolbarPanel toolbarPanel = editorComponent.getToolbarPanel();
+                toolbarPanel.setUndoHandler(editorComponent.getUndoHandler().get(), (event) -> {
+                    fileHandler.saveDocument();
+                });
+                editorComponent.getCodeArea().addDataChangedListener(() -> toolbarPanel.updateUndoState());
+
+                CloseControlPanel closeControlPanel = new CloseControlPanel();
+                JComponent component = editorComponent.getComponent();
+                JPanel dialogPanel = WindowUtils.createDialogPanel(component, closeControlPanel);
+                WindowUtils.DialogWrapper dialog = WindowUtils.createDialog(dialogPanel, frameModule.getFrame(), "BinEd", Dialog.ModalityType.APPLICATION_MODAL);
+                closeControlPanel.setHandler(() -> {
+                    dialog.close();
+                });
+                ((JDialog) dialog.getWindow()).setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+                ((JDialog) dialog.getWindow()).addWindowListener(new WindowAdapter() {
+                    @Override
+                    public void windowClosing(WindowEvent e) {
+                        if (BinEdManager.getInstance().releaseFile(fileHandler)) {
+                            dialog.dispose();
+                        }
+                    }
+                });
+                dialog.showCentered(frameModule.getFrame());
+                dialog.dispose();
+            }
+		}
+	}
+
+    @Override
 	public void addNavigatableListener(NavigatableRemovalListener listener) {
 		navigationListeners.add(listener);
 	}

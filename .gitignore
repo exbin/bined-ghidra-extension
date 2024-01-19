@@ -5,6 +5,8 @@
 !/deps/dependency.txt
 !/deps/*.gradle
 build/
+dist/
+.idea/
 target/
 /release
 *~
