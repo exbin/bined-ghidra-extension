@@ -14,9 +14,9 @@ plugins {
 }
 import org.gradle.util.VersionNumber
 
-version = '0.2.0'
+version = '0.2.1-SNAPSHOT'
 
-sourceCompatibility = '17'
+sourceCompatibility = '21'
 
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
@@ -122,6 +122,8 @@ if (System.env.GHIDRA_INSTALL_DIR) {
     ghidraInstallDir = project.getProperty("GHIDRA_INSTALL_DIR")
 }
 
+ghidraInstallDir = "/home/hajdam/app/Ghidra/ghidra_11.2_PUBLIC"
+
 if (ghidraInstallDir) {
     if (gradle.startParameter.taskNames.contains('buildExtension')) {
         apply from: new File(ghidraInstallDir).getCanonicalPath() + "/support/buildExtension.gradle"
@@ -161,7 +163,7 @@ jar {
     manifest {
         attributes(
             'Specification-Title': "BinedExtension",
-            'Specification-Version': "10.4",
+            'Specification-Version': "11.2",
             'Main-Class': mainClass
         )
     }

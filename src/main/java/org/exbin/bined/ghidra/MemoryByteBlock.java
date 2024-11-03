@@ -139,6 +139,42 @@ public class MemoryByteBlock implements ByteBlock {
 	}
 
 	/**
+	 * Set the short at the given index.
+	 * @param index byte index
+	 * @param value value to set
+	 * @throws ByteBlockAccessException if the block cannot be updated
+	 * @throws IndexOutOfBoundsException if the given index is not in this
+	 * block.
+	 */
+	public void setShort(BigInteger index, short value) throws ByteBlockAccessException {
+		Address addr = getAddress(index);
+		checkEditsAllowed(addr, 8);
+		try {
+			memory.setShort(addr, value, bigEndian);
+		}
+		catch (MemoryAccessException e) {
+			throw new ByteBlockAccessException(e.getMessage());
+		}
+	}
+
+	/**
+	 * Get the short value at the given index.
+	 * @param index byte index
+	 * @throws ByteBlockAccessException if the block cannot be read
+	 * @throws IndexOutOfBoundsException if the given index is not in this
+	 * block.
+	 */
+	public short getShort(BigInteger index) throws ByteBlockAccessException {
+		Address addr = getAddress(index);
+		try {
+			return memory.getShort(addr, bigEndian);
+		}
+		catch (MemoryAccessException e) {
+			throw new ByteBlockAccessException(e.getMessage());
+		}
+	}
+
+	/**
 	 * Set the long at the given index.
 	 * 
 	 * @param index byte index

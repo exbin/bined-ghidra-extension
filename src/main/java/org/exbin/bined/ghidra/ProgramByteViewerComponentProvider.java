@@ -384,12 +384,6 @@ public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 		return tool.isVisible(this);
 	}
 
-	@Override
-	public void requestFocus() {
-		// wrapperFile.getCurrentComponent().requestFocus();
-		tool.toFront(this);
-	}
-
 //==================================================================================================
 // End Navigatable interface methods */
 //==================================================================================================
