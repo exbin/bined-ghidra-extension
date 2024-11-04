@@ -43,6 +43,7 @@ import help.Help;
 import help.HelpService;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.exbin.framework.bined.BinEdEditorComponent;
+import org.exbin.framework.bined.gui.BinEdComponentPanel;
 
 /**
  * BinEd component FieldViewer.
@@ -55,7 +56,7 @@ public class BinedFieldPanel extends FieldPanel implements FieldMouseListener,
     
     public static final String PANEL_NAME = "BinEd";
 
-	private BinEdEditorComponent panel;
+	private BinEdComponentPanel panel;
 
     private DataFormatModel model;
 	private int bytesPerLine;
@@ -90,7 +91,7 @@ public class BinedFieldPanel extends FieldPanel implements FieldMouseListener,
 	 * @param bytesPerLine number of bytes displayed in a row
 	 * @param fm the font metrics used for drawing
 	 */
-	protected BinedFieldPanel(BinEdEditorComponent panel, ByteViewerLayoutModel layoutModel,
+	protected BinedFieldPanel(BinEdComponentPanel panel, ByteViewerLayoutModel layoutModel,
 			DataFormatModel model, int bytesPerLine) {
 		super(layoutModel, PANEL_NAME);
         this.panel = panel;

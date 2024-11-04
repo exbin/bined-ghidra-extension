@@ -51,14 +51,15 @@ import java.awt.Frame;
 import java.awt.Window;
 import java.io.File;
 import org.exbin.bined.ghidra.gui.BinEdToolbarPanel;
-import org.exbin.bined.ghidra.main.Application;
-import org.exbin.bined.ghidra.main.BinEdManager;
+import org.exbin.framework.App;
 import org.exbin.framework.bined.BinEdEditorComponent;
 import org.exbin.framework.bined.BinEdFileHandler;
 import org.exbin.framework.bined.BinEdFileManager;
+import org.exbin.framework.bined.BinedModule;
+import org.exbin.framework.frame.FrameModule;
 import org.exbin.framework.frame.api.FrameModuleApi;
 import org.exbin.framework.utils.WindowUtils;
-import org.exbin.framework.utils.gui.CloseControlPanel;
+import org.exbin.framework.window.api.gui.CloseControlPanel;
 
 public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 		implements DomainObjectListener, Navigatable {
@@ -87,13 +88,13 @@ public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 	public ProgramByteViewerComponentProvider(PluginTool tool, AbstractByteViewerPlugin<?> plugin,
 			boolean isConnected) {
 		this(tool, plugin, "BinEd", isConnected);
-        BinEdManager binedManager = BinEdManager.getInstance();
         Window activeWindow = tool.getActiveWindow();
         Frame frame = (Frame) SwingUtilities.getWindowAncestor(activeWindow);
         if (frame == null) {
             frame = tool.getToolFrame();
         }
-        binedManager.getApplication().setFrame(frame);
+// TODO		FrameModule frameModule = App.getModule(FrameModule.class);
+//		frameModule.setFrame(frame);
 	}
 
 	protected ProgramByteViewerComponentProvider(PluginTool tool,
@@ -108,7 +109,7 @@ public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 			addToToolbar();
 		}
 
-		decorationComponent = new DecoratorPanel(wrapperFile.getComponent(), isConnected);
+		decorationComponent = new DecoratorPanel(fileHandler.getComponent(), isConnected);
 		clipboardProvider = new ByteViewerClipboardProvider(this, tool);
 		addToTool();
 
@@ -790,15 +791,14 @@ public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 
 		@Override
 		public void actionPerformed(ActionContext context) {
-            BinEdManager binedManager = BinEdManager.getInstance();
-            Application application = binedManager.getApplication();
-            FrameModuleApi frameModule = application.getModuleRepository().getModuleByInterface(FrameModuleApi.class);
+			BinedModule binedModule = App.getModule(BinedModule.class);
+            FrameModuleApi frameModule = App.getModule(FrameModuleApi.class);
 
             JFileChooser fileChooser = new JFileChooser();
             int dialogResult = fileChooser.showOpenDialog(frameModule.getFrame());
             if (dialogResult == JFileChooser.APPROVE_OPTION) {
                 File file = fileChooser.getSelectedFile();
-                
+/*
                 BinEdFileManager fileManager = binedManager.getFileManager();
                 BinEdFileHandler fileHandler = new BinEdFileHandler();
                 fileManager.initFileHandler(fileHandler);
@@ -829,7 +829,7 @@ public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
                     }
                 });
                 dialog.showCentered(frameModule.getFrame());
-                dialog.dispose();
+                dialog.dispose(); */
             }
 		}
 	}

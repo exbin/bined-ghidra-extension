@@ -21,8 +21,10 @@ sourceCompatibility = '21'
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
 ext {
-    binedVersion = '0.2.1'
-    binaryDataVersion = '0.2.1'
+    binedLibraryVersion = '0.3.0-SNAPSHOT'
+    binedAppLibraryVersion = '0.3.0-SNAPSHOT'
+    exbinFrameworkVersion = '0.3.0-SNAPSHOT'
+    binaryDataVersion = '0.2.2-SNAPSHOT'
 }
 
 tasks.withType(JavaCompile) {
@@ -100,7 +102,15 @@ task buildPack (type: Zip, dependsOn: tasks.jar) {
 // publish.dependsOn buildPack
 
 def binedLibrary = { String libName ->
-    return (libName.endsWith('-SNAPSHOT')) ? ":${libName}-${binedVersion}" : "org.exbin.bined:${libName}:${binedVersion}"
+    return (libName.endsWith('-SNAPSHOT')) ? ":${libName}-${binedLibraryVersion}" : "org.exbin.bined:${libName}:${binedLibraryVersion}"
+}
+
+def binedAppLibrary = { String libName ->
+    return (binedAppLibraryVersion.endsWith('-SNAPSHOTX')) ? ":${libName}-${binedAppLibraryVersion}" : "org.exbin.framework:${libName}:${binedAppLibraryVersion}"
+}
+
+def exbinFrameworkLibrary = { String libName ->
+    return (exbinFrameworkVersion.endsWith('-SNAPSHOTX')) ? ":${libName}-${exbinFrameworkVersion}" : "org.exbin.framework:${libName}:${exbinFrameworkVersion}"
 }
 
 def binaryDataLibrary = { String libName ->
@@ -141,13 +151,58 @@ dependencies {
     compileOnly fileTree(dir: ghidraInstallDir + '/Ghidra/Debug', include: "**/*.jar")
     compileOnly fileTree(dir: ghidraInstallDir + '/Ghidra/Extensions',
 						 include: "**/*.jar", exclude: project.name)
+    implementation(exbinFrameworkLibrary("exbin-framework"))
+    implementation(exbinFrameworkLibrary("exbin-framework-basic"))
+    implementation(exbinFrameworkLibrary("exbin-framework-frame"))
+    implementation(exbinFrameworkLibrary("exbin-framework-frame-api"))
+    implementation(exbinFrameworkLibrary("exbin-framework-ui"))
+    implementation(exbinFrameworkLibrary("exbin-framework-ui-api"))
+    implementation(exbinFrameworkLibrary("exbin-framework-component"))
+    implementation(exbinFrameworkLibrary("exbin-framework-component-api"))
+//    implementation(exbinFrameworkLibrary("exbin-framework-data"))
+    implementation(exbinFrameworkLibrary("exbin-framework-window"))
+    implementation(exbinFrameworkLibrary("exbin-framework-window-api"))
+    implementation(exbinFrameworkLibrary("exbin-framework-action"))
+    implementation(exbinFrameworkLibrary("exbin-framework-action-api"))
+    implementation(exbinFrameworkLibrary("exbin-framework-file"))
+    implementation(exbinFrameworkLibrary("exbin-framework-file-api"))
+    implementation(exbinFrameworkLibrary("exbin-framework-editor"))
+    implementation(exbinFrameworkLibrary("exbin-framework-editor-api"))
+    implementation(exbinFrameworkLibrary("exbin-framework-about-api"))
+    implementation(exbinFrameworkLibrary("exbin-framework-about"))
+    implementation(exbinFrameworkLibrary("exbin-framework-operation"))
+    implementation(exbinFrameworkLibrary("exbin-framework-operation-api"))
+    implementation(exbinFrameworkLibrary("exbin-framework-operation-undo"))
+    implementation(exbinFrameworkLibrary("exbin-framework-operation-undo-api"))
+    implementation(exbinFrameworkLibrary("exbin-framework-action-popup"))
+    implementation(exbinFrameworkLibrary("exbin-framework-action-popup-api"))
+    implementation(exbinFrameworkLibrary("exbin-framework-help-online"))
+    implementation(exbinFrameworkLibrary("exbin-framework-help-online-api"))
+    implementation(exbinFrameworkLibrary("exbin-framework-options"))
+    implementation(exbinFrameworkLibrary("exbin-framework-options-api"))
+    implementation(exbinFrameworkLibrary("exbin-framework-preferences-api"))
+    implementation(exbinFrameworkLibrary("exbin-framework-preferences"))
+    implementation(exbinFrameworkLibrary("exbin-framework-language-api"))
+    implementation(exbinFrameworkLibrary("exbin-framework-language"))
+    implementation(exbinFrameworkLibrary("exbin-framework-editor-text"))
+    implementation(exbinFrameworkLibrary("exbin-framework-utils"))
+    implementation(binedAppLibrary("exbin-framework-bined"))
+    implementation(binedAppLibrary("exbin-framework-bined-bookmarks"))
+    implementation(binedAppLibrary("exbin-framework-bined-compare"))
+    implementation(binedAppLibrary("exbin-framework-bined-inspector"))
+    implementation(binedAppLibrary("exbin-framework-bined-macro"))
+    implementation(binedAppLibrary("exbin-framework-bined-objectdata"))
+    implementation(binedAppLibrary("exbin-framework-bined-operation"))
+    implementation(binedAppLibrary("exbin-framework-bined-operation-bouncycastle"))
+    implementation(binedAppLibrary("exbin-framework-bined-search"))
+    implementation(binedAppLibrary("exbin-framework-bined-tool-content"))
     implementation binedLibrary('bined-core')
-    implementation binedLibrary('bined-extended')
+    implementation binedLibrary('bined-section')
     implementation binedLibrary('bined-highlight-swing')
     implementation binedLibrary('bined-operation')
     implementation binedLibrary('bined-operation-swing')
     implementation binedLibrary('bined-swing')
-    implementation binedLibrary('bined-swing-extended')
+    implementation binedLibrary('bined-swing-section')
     implementation binaryDataLibrary('binary_data')
     implementation binaryDataLibrary('binary_data-paged')
     implementation binaryDataLibrary('binary_data-delta')

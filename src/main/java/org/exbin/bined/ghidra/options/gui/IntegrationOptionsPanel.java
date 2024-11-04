@@ -19,8 +19,8 @@ import java.util.ResourceBundle;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.exbin.bined.ghidra.options.impl.IntegrationOptionsImpl;
-import org.exbin.framework.utils.LanguageUtils;
-import org.exbin.framework.utils.WindowUtils;
+import org.exbin.framework.App;
+import org.exbin.framework.language.api.LanguageModuleApi;
 import org.exbin.framework.options.api.OptionsModifiedListener;
 import org.exbin.framework.options.api.OptionsComponent;
 
@@ -32,7 +32,7 @@ import org.exbin.framework.options.api.OptionsComponent;
 @ParametersAreNonnullByDefault
 public class IntegrationOptionsPanel extends javax.swing.JPanel implements OptionsComponent<IntegrationOptionsImpl> {
 
-    private final java.util.ResourceBundle resourceBundle = LanguageUtils.getResourceBundleByClass(IntegrationOptionsPanel.class);
+    private final java.util.ResourceBundle resourceBundle = App.getModule(LanguageModuleApi.class).getBundle(IntegrationOptionsPanel.class);
     private OptionsModifiedListener optionsModifiedListener;
 
     public IntegrationOptionsPanel() {
@@ -222,15 +222,6 @@ public class IntegrationOptionsPanel extends javax.swing.JPanel implements Optio
     private void binaryMultiviewCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_binaryMultiviewCheckBoxStateChanged
         setModified(true);
     }//GEN-LAST:event_binaryMultiviewCheckBoxStateChanged
-
-    /**
-     * Test method for this panel.
-     *
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        WindowUtils.invokeDialog(new IntegrationOptionsPanel());
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox binaryMultiviewCheckBox;

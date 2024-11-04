@@ -39,10 +39,15 @@ import ghidra.framework.plugintool.PluginTool;
 import ghidra.util.*;
 import ghidra.util.classfinder.ClassSearcher;
 import ghidra.util.task.SwingUpdateManager;
-import org.exbin.bined.ghidra.action.OptionsAction;
-import org.exbin.bined.ghidra.main.BinEdManager;
-import org.exbin.bined.ghidra.main.BinEdWrapperFile;
+import org.exbin.auxiliary.binary_data.BinaryData;
+import org.exbin.auxiliary.binary_data.EmptyBinaryData;
+import org.exbin.bined.EditMode;
+import org.exbin.bined.ghidra.main.BinEdGhidraFileProvider;
+import org.exbin.bined.swing.section.SectCodeArea;
+import org.exbin.framework.App;
+import org.exbin.framework.bined.BinEdFileHandler;
 import org.exbin.framework.bined.BinEdFileManager;
+import org.exbin.framework.bined.BinedModule;
 
 public abstract class BinEdComponentProvider extends ComponentProviderAdapter
         implements OptionsChangeListener {
@@ -85,7 +90,7 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
     private static final String OPTION_HIGHLIGHT_CURSOR_LINE
             = GhidraOptions.HIGHLIGHT_CURSOR_LINE_OPTION_NAME;
 
-    protected BinEdWrapperFile wrapperFile;
+    protected BinEdFileHandler fileHandler;
 
     private int bytesPerLine;
     private int offset;
@@ -112,11 +117,13 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
 
         initializedDataFormatModelClassMap();
 
-        wrapperFile = new BinEdWrapperFile();
-        BinEdManager binEdManager = BinEdManager.getInstance();
-        BinEdFileManager fileManager = binEdManager.getFileManager();
-        fileManager.initComponentPanel(wrapperFile.getEditorComponent().getComponentPanel());
-        binEdManager.initFileHandler(wrapperFile);
+        BinedModule binedModule = App.getModule(BinedModule.class);
+        BinEdGhidraFileProvider fileProvider = (BinEdGhidraFileProvider) binedModule.getEditorProvider();
+        fileHandler = new BinEdFileHandler();
+        fileProvider.setActiveFile(fileHandler);
+        BinEdFileManager fileManager = binedModule.getFileManager();
+        fileManager.initComponentPanel(fileHandler.getComponent());
+        fileManager.initFileHandler(fileHandler);
 
         bytesPerLine = DEFAULT_BYTES_PER_LINE;
         setIcon(new GIcon("icon.plugin.binedextension.provider"));
@@ -139,20 +146,20 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
 
     private void createActions() {
 //		editModeAction = new ToggleEditAction(this, plugin);
-		optionsAction = new DockingAction("BinEd Plugin Options", plugin.getName()) {
-            @Override
-            public void actionPerformed(ActionContext ac) {
-                new OptionsAction(wrapperFile.getEditorComponent().getComponentPanel(), null, BinEdManager.getInstance().getPreferences()).actionPerformed(null);
-            }
-        };
+//		optionsAction = new DockingAction("BinEd Plugin Options", plugin.getName()) {
+//            @Override
+//            public void actionPerformed(ActionContext ac) {
+//                new OptionsAction(wrapperFile.getEditorComponent().getComponentPanel(), null, BinEdManager.getInstance().getPreferences()).actionPerformed(null);
+//            }
+//        };
 
 //		addLocalAction(editModeAction);
-		addLocalAction(optionsAction);
+//		addLocalAction(optionsAction);
     }
 
     @Override
     public JComponent getComponent() {
-        return wrapperFile.getComponent();
+        return fileHandler.getComponent();
     }
 
     @Override
@@ -165,7 +172,19 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
     }
 
     protected void notifyBlockSetChanged() {
-        wrapperFile.openFile(blockSet);
+        SectCodeArea codeArea = fileHandler.getCodeArea();
+        BinaryData binaryData;
+        if (blockSet == null) {
+            binaryData = EmptyBinaryData.INSTANCE;
+            codeArea.setEditMode(EditMode.READ_ONLY);
+        } else {
+            binaryData = new ByteBlocksBinaryData(blockSet);
+            codeArea.setEditMode(EditMode.INPLACE);
+        }
+        // documentOriginalSize = binaryData.getDataSize();
+        //        title = blockSet.
+
+        codeArea.setContentData(binaryData);
     }
 
     /**
@@ -270,7 +289,7 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
         if (component != null) {
 //			component.setGroupSize(groupSize);
 //			component.invalidate();
-            wrapperFile.getComponent().repaint();
+            fileHandler.getComponent().repaint();
         }
         tool.setConfigChanged(true);
     }
@@ -334,7 +353,7 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
 
         String viewName = model.getName();
 
-        BinedFieldPanel fieldPanel = new BinedFieldPanel(wrapperFile.getEditorComponent(), new ByteViewerLayoutModel(), model, bytesPerLine);
+        BinedFieldPanel fieldPanel = new BinedFieldPanel(fileHandler.getComponent(), new ByteViewerLayoutModel(), model, bytesPerLine);
 
 //			wrapperFile.addView(viewName, model, editModeAction.isSelected(), updateViewPosition);
         viewMap.put(viewName, fieldPanel);
