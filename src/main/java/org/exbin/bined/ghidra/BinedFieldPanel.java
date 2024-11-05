@@ -42,6 +42,8 @@ import ghidra.util.Msg;
 import help.Help;
 import help.HelpService;
 import javax.annotation.ParametersAreNonnullByDefault;
+
+import org.exbin.bined.ghidra.gui.BinEdFilePanel;
 import org.exbin.framework.bined.BinEdEditorComponent;
 import org.exbin.framework.bined.gui.BinEdComponentPanel;
 
@@ -56,7 +58,7 @@ public class BinedFieldPanel extends FieldPanel implements FieldMouseListener,
     
     public static final String PANEL_NAME = "BinEd";
 
-	private BinEdComponentPanel panel;
+	private BinEdFilePanel panel;
 
     private DataFormatModel model;
 	private int bytesPerLine;
@@ -91,7 +93,7 @@ public class BinedFieldPanel extends FieldPanel implements FieldMouseListener,
 	 * @param bytesPerLine number of bytes displayed in a row
 	 * @param fm the font metrics used for drawing
 	 */
-	protected BinedFieldPanel(BinEdComponentPanel panel, ByteViewerLayoutModel layoutModel,
+	protected BinedFieldPanel(BinEdFilePanel panel, ByteViewerLayoutModel layoutModel,
 			DataFormatModel model, int bytesPerLine) {
 		super(layoutModel, PANEL_NAME);
         this.panel = panel;

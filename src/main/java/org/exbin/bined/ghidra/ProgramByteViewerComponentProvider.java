@@ -109,7 +109,7 @@ public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 			addToToolbar();
 		}
 
-		decorationComponent = new DecoratorPanel(fileHandler.getComponent(), isConnected);
+		decorationComponent = new DecoratorPanel(filePanel, isConnected);
 		clipboardProvider = new ByteViewerClipboardProvider(this, tool);
 		addToTool();
 

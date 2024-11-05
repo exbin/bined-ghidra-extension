@@ -47,11 +47,9 @@ import org.exbin.framework.action.api.MenuGroup;
 import org.exbin.framework.action.api.MenuPosition;
 import org.exbin.framework.action.api.PositionMode;
 import org.exbin.framework.action.api.SeparationMode;
-import org.exbin.framework.bined.BinEdFileHandler;
 import org.exbin.framework.bined.BinedModule;
 import org.exbin.framework.bined.bookmarks.BinedBookmarksModule;
 import org.exbin.framework.bined.compare.BinedCompareModule;
-import org.exbin.framework.bined.gui.BinEdComponentFileApi;
 import org.exbin.framework.bined.inspector.BinedInspectorModule;
 import org.exbin.framework.bined.macro.BinedMacroModule;
 import org.exbin.framework.bined.objectdata.BinedObjectDataModule;
@@ -71,34 +69,30 @@ import org.exbin.framework.frame.api.FrameModuleApi;
 import org.exbin.framework.help.online.HelpOnlineModule;
 import org.exbin.framework.language.LanguageModule;
 import org.exbin.framework.language.api.LanguageModuleApi;
-import org.exbin.framework.language.api.LanguageProvider;
 import org.exbin.framework.operation.undo.OperationUndoModule;
 import org.exbin.framework.operation.undo.api.OperationUndoModuleApi;
 import org.exbin.framework.options.OptionsModule;
 import org.exbin.framework.options.api.OptionsModuleApi;
 import org.exbin.framework.preferences.PreferencesModule;
-import org.exbin.framework.preferences.api.Preferences;
 import org.exbin.framework.preferences.api.PreferencesModuleApi;
 import org.exbin.framework.ui.UiModule;
 import org.exbin.framework.ui.api.UiModuleApi;
-import org.exbin.framework.utils.UiUtils;
 import org.exbin.framework.window.WindowModule;
 import org.exbin.framework.window.api.WindowModuleApi;
 
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import java.awt.event.ActionEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nonnull;
-import javax.annotation.ParametersAreNonnullByDefault;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 
 /**
  * BinEd plugin for Ghidra SRE.
@@ -123,7 +117,7 @@ public class BinedExtensionPlugin extends AbstractByteViewerPlugin<ProgramByteVi
     public static final String PLUGIN_ID = "org.exbin.bined.ghidra";
     public static final String PLUGIN_PREFIX = "BinEdPlugin.";
 
-    private boolean initialized = false;
+    private static boolean initialized = false;
 
     public BinedExtensionPlugin(PluginTool tool) {
         super(tool);

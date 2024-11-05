@@ -15,39 +15,57 @@
  */
 package org.exbin.bined.ghidra;
 
-import docking.ActionContext;
 import docking.action.DockingAction;
-import static ghidra.GhidraOptions.*;
-
-import java.awt.*;
-import java.math.BigInteger;
-import java.util.*;
-import java.util.List;
-
-import javax.swing.JComponent;
-
-import generic.theme.*;
+import generic.theme.GColor;
+import generic.theme.GIcon;
 import ghidra.GhidraOptions;
 import ghidra.GhidraOptions.CURSOR_MOUSE_BUTTON_NAMES;
 import ghidra.app.plugin.core.byteviewer.ByteViewerLayoutModel;
-import ghidra.app.plugin.core.format.*;
+import ghidra.app.plugin.core.format.ByteBlock;
+import ghidra.app.plugin.core.format.ByteBlockInfo;
+import ghidra.app.plugin.core.format.ByteBlockSelection;
+import ghidra.app.plugin.core.format.ByteBlockSet;
+import ghidra.app.plugin.core.format.DataFormatModel;
+import ghidra.app.plugin.core.format.HexFormatModel;
+import ghidra.app.plugin.core.format.UniversalDataFormatModel;
 import ghidra.app.services.MarkerService;
 import ghidra.app.util.viewer.listingpanel.AddressSetDisplayListener;
-import ghidra.framework.options.*;
+import ghidra.framework.options.OptionsChangeListener;
+import ghidra.framework.options.SaveState;
+import ghidra.framework.options.ToolOptions;
 import ghidra.framework.plugintool.ComponentProviderAdapter;
 import ghidra.framework.plugintool.PluginTool;
-import ghidra.util.*;
+import ghidra.util.HelpLocation;
+import ghidra.util.Msg;
+import ghidra.util.SystemUtilities;
 import ghidra.util.classfinder.ClassSearcher;
 import ghidra.util.task.SwingUpdateManager;
 import org.exbin.auxiliary.binary_data.BinaryData;
 import org.exbin.auxiliary.binary_data.EmptyBinaryData;
 import org.exbin.bined.EditMode;
+import org.exbin.bined.ghidra.gui.BinEdFilePanel;
 import org.exbin.bined.ghidra.main.BinEdGhidraFileProvider;
 import org.exbin.bined.swing.section.SectCodeArea;
 import org.exbin.framework.App;
 import org.exbin.framework.bined.BinEdFileHandler;
 import org.exbin.framework.bined.BinEdFileManager;
 import org.exbin.framework.bined.BinedModule;
+
+import javax.swing.JComponent;
+import java.awt.Color;
+import java.awt.Font;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static ghidra.GhidraOptions.CATEGORY_BROWSER_FIELDS;
+import static ghidra.GhidraOptions.CURSOR_HIGHLIGHT_BUTTON_NAME;
+import static ghidra.GhidraOptions.HIGHLIGHT_COLOR_NAME;
 
 public abstract class BinEdComponentProvider extends ComponentProviderAdapter
         implements OptionsChangeListener {
@@ -90,7 +108,7 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
     private static final String OPTION_HIGHLIGHT_CURSOR_LINE
             = GhidraOptions.HIGHLIGHT_CURSOR_LINE_OPTION_NAME;
 
-    protected BinEdFileHandler fileHandler;
+    protected BinEdFilePanel filePanel;
 
     private int bytesPerLine;
     private int offset;
@@ -119,11 +137,14 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
 
         BinedModule binedModule = App.getModule(BinedModule.class);
         BinEdGhidraFileProvider fileProvider = (BinEdGhidraFileProvider) binedModule.getEditorProvider();
-        fileHandler = new BinEdFileHandler();
+        filePanel = new BinEdFilePanel();
+        BinEdFileHandler fileHandler = new BinEdFileHandler();
+        filePanel.setFileHandler(fileHandler);
         fileProvider.setActiveFile(fileHandler);
         BinEdFileManager fileManager = binedModule.getFileManager();
         fileManager.initComponentPanel(fileHandler.getComponent());
         fileManager.initFileHandler(fileHandler);
+        fileHandler.registerUndoHandler();
 
         bytesPerLine = DEFAULT_BYTES_PER_LINE;
         setIcon(new GIcon("icon.plugin.binedextension.provider"));
@@ -159,7 +180,7 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
 
     @Override
     public JComponent getComponent() {
-        return fileHandler.getComponent();
+        return filePanel;
     }
 
     @Override
@@ -172,7 +193,7 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
     }
 
     protected void notifyBlockSetChanged() {
-        SectCodeArea codeArea = fileHandler.getCodeArea();
+        SectCodeArea codeArea = filePanel.getCodeArea();
         BinaryData binaryData;
         if (blockSet == null) {
             binaryData = EmptyBinaryData.INSTANCE;
@@ -289,7 +310,7 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
         if (component != null) {
 //			component.setGroupSize(groupSize);
 //			component.invalidate();
-            fileHandler.getComponent().repaint();
+            filePanel.repaint();
         }
         tool.setConfigChanged(true);
     }
@@ -353,7 +374,7 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
 
         String viewName = model.getName();
 
-        BinedFieldPanel fieldPanel = new BinedFieldPanel(fileHandler.getComponent(), new ByteViewerLayoutModel(), model, bytesPerLine);
+        BinedFieldPanel fieldPanel = new BinedFieldPanel(filePanel, new ByteViewerLayoutModel(), model, bytesPerLine);
 
 //			wrapperFile.addView(viewName, model, editModeAction.isSelected(), updateViewPosition);
         viewMap.put(viewName, fieldPanel);
