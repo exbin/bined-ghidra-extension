@@ -15,15 +15,21 @@
  */
 package org.exbin.bined.ghidra.gui;
 
+import org.exbin.bined.CodeAreaUtils;
 import org.exbin.bined.CodeType;
+import org.exbin.bined.highlight.swing.NonprintablesCodeAreaAssessor;
+import org.exbin.bined.swing.CodeAreaSwingUtils;
+import org.exbin.bined.swing.capability.ColorAssessorPainterCapable;
 import org.exbin.bined.swing.section.SectCodeArea;
 import org.exbin.framework.App;
 import org.exbin.framework.bined.BinEdFileHandler;
+import org.exbin.framework.bined.BinEdFileManager;
 import org.exbin.framework.bined.BinedModule;
 import org.exbin.framework.bined.gui.BinEdComponentPanel;
 import org.exbin.framework.bined.gui.BinaryStatusPanel;
 import org.exbin.framework.bined.handler.CodeAreaPopupMenuHandler;
 import org.exbin.framework.language.api.LanguageModuleApi;
+import org.exbin.framework.options.api.OptionsModuleApi;
 import org.exbin.framework.utils.DesktopUtils;
 
 import javax.annotation.Nonnull;
@@ -36,10 +42,6 @@ import javax.swing.event.PopupMenuListener;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
-import org.exbin.bined.CodeAreaUtils;
-import org.exbin.bined.highlight.swing.NonprintablesCodeAreaAssessor;
-import org.exbin.bined.swing.CodeAreaSwingUtils;
-import org.exbin.bined.swing.capability.ColorAssessorPainterCapable;
 
 /**
  * Binary editor file panel.
@@ -51,12 +53,11 @@ public class BinEdFilePanel extends JPanel {
 
     private BinEdFileHandler fileHandler;
     private BinEdToolbarPanel toolbarPanel = new BinEdToolbarPanel();
-    private BinaryStatusPanel statusPanel = new BinaryStatusPanel();
+    private BinaryStatusPanel statusPanel;
 
     public BinEdFilePanel() {
         super(new BorderLayout());
         add(toolbarPanel, BorderLayout.NORTH);
-        add(statusPanel, BorderLayout.SOUTH);
     }
 
     public void setFileHandler(BinEdFileHandler fileHandler) {
@@ -121,6 +122,13 @@ public class BinEdFilePanel extends JPanel {
                 popupMenu.show(invoker, x, y);
             }
         });
+
+        OptionsModuleApi optionsModule = App.getModule(OptionsModuleApi.class);
+        toolbarPanel.setOptionsAction(optionsModule.createOptionsAction());
+
+        BinEdFileManager fileManager = binedModule.getFileManager();
+        statusPanel = fileManager.getBinaryStatusPanel();
+        add(statusPanel, BorderLayout.SOUTH);
 
         add(componentPanel, BorderLayout.CENTER);
         revalidate();

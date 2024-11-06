@@ -43,17 +43,29 @@ import ghidra.util.task.SwingUpdateManager;
 import org.exbin.auxiliary.binary_data.BinaryData;
 import org.exbin.auxiliary.binary_data.EmptyBinaryData;
 import org.exbin.bined.EditMode;
+import org.exbin.bined.EditOperation;
 import org.exbin.bined.ghidra.gui.BinEdFilePanel;
-import org.exbin.bined.ghidra.main.BinEdGhidraFileProvider;
+import org.exbin.bined.ghidra.main.BinEdGhidraEditorProvider;
 import org.exbin.bined.swing.section.SectCodeArea;
 import org.exbin.framework.App;
+import org.exbin.framework.bined.BinEdEditorProvider;
 import org.exbin.framework.bined.BinEdFileHandler;
 import org.exbin.framework.bined.BinEdFileManager;
+import org.exbin.framework.bined.BinaryStatusApi;
 import org.exbin.framework.bined.BinedModule;
+import org.exbin.framework.bined.FileHandlingMode;
+import org.exbin.framework.bined.action.GoToPositionAction;
+import org.exbin.framework.bined.gui.BinaryStatusPanel;
+import org.exbin.framework.bined.preferences.BinaryEditorPreferences;
+import org.exbin.framework.bined.preferences.EditorPreferences;
+import org.exbin.framework.editor.text.EncodingsHandler;
+import org.exbin.framework.file.api.FileHandler;
+import org.exbin.framework.preferences.api.PreferencesModuleApi;
 
 import javax.swing.JComponent;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.event.MouseEvent;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -61,6 +73,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import static ghidra.GhidraOptions.CATEGORY_BROWSER_FIELDS;
@@ -136,15 +149,72 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
         initializedDataFormatModelClassMap();
 
         BinedModule binedModule = App.getModule(BinedModule.class);
-        BinEdGhidraFileProvider fileProvider = (BinEdGhidraFileProvider) binedModule.getEditorProvider();
-        filePanel = new BinEdFilePanel();
-        BinEdFileHandler fileHandler = new BinEdFileHandler();
-        filePanel.setFileHandler(fileHandler);
-        fileProvider.setActiveFile(fileHandler);
+        BinEdGhidraEditorProvider editorProvider = (BinEdGhidraEditorProvider) binedModule.getEditorProvider();
+        PreferencesModuleApi preferencesModule = App.getModule(PreferencesModuleApi.class);
+        EditorPreferences editorPreferences = new EditorPreferences(preferencesModule.getAppPreferences());
+        BinEdFileHandler fileHandler = editorProvider.createFileHandler(0);
+        fileHandler.setNewData(editorPreferences.getFileHandlingMode());
+        editorProvider.setActiveFile(fileHandler);
+
         BinEdFileManager fileManager = binedModule.getFileManager();
-        fileManager.initComponentPanel(fileHandler.getComponent());
-        fileManager.initFileHandler(fileHandler);
+        EncodingsHandler encodingsHandler = binedModule.getEncodingsHandler();
+        fileManager.registerStatusBar();
+        fileManager.setStatusControlHandler(new BinaryStatusPanel.StatusControlHandler() {
+            @Override
+            public void changeEditOperation(EditOperation editOperation) {
+                Optional<FileHandler> activeFile = editorProvider.getActiveFile();
+                if (activeFile.isPresent()) {
+                    ((BinEdFileHandler) activeFile.get()).getCodeArea().setEditOperation(editOperation);
+                }
+            }
+
+            @Override
+            public void changeCursorPosition() {
+                GoToPositionAction action = new GoToPositionAction();
+                action.setCodeArea(fileHandler.getCodeArea());
+                action.actionPerformed(null);
+            }
+
+            @Override
+            public void cycleEncodings() {
+                if (encodingsHandler != null) {
+                    encodingsHandler.cycleEncodings();
+                }
+            }
+
+            @Override
+            public void encodingsPopupEncodingsMenu(MouseEvent mouseEvent) {
+                if (encodingsHandler != null) {
+                    encodingsHandler.popupEncodingsMenu(mouseEvent);
+                }
+            }
+
+            @Override
+            public void changeMemoryMode(BinaryStatusApi.MemoryMode memoryMode) {
+                Optional<FileHandler> activeFile = editorProvider.getActiveFile();
+                if (activeFile.isPresent()) {
+                    BinEdFileHandler fileHandler = (BinEdFileHandler) activeFile.get();
+                    FileHandlingMode fileHandlingMode = fileHandler.getFileHandlingMode();
+                    FileHandlingMode newHandlingMode = memoryMode == BinaryStatusApi.MemoryMode.DELTA_MODE ? FileHandlingMode.DELTA : FileHandlingMode.MEMORY;
+                    if (newHandlingMode != fileHandlingMode) {
+                        PreferencesModuleApi preferencesModule = App.getModule(PreferencesModuleApi.class);
+                        BinaryEditorPreferences preferences = new BinaryEditorPreferences(preferencesModule.getAppPreferences());
+                        if (editorProvider.releaseFile(fileHandler)) {
+                            fileHandler.switchFileHandlingMode(newHandlingMode);
+                            preferences.getEditorPreferences().setFileHandlingMode(newHandlingMode);
+                        }
+                        ((BinEdEditorProvider) editorProvider).updateStatus();
+                    }
+                }
+            }
+        });
         fileHandler.registerUndoHandler();
+
+        filePanel = new BinEdFilePanel();
+        filePanel.setFileHandler(fileHandler);
+//        filePanel.getToolbarPanel().setUndoHandler(fileHandler.getCodeAreaUndoHandler().get(), actionEvent -> {
+//            fileHandler.saveFile();
+//        });
 
         bytesPerLine = DEFAULT_BYTES_PER_LINE;
         setIcon(new GIcon("icon.plugin.binedextension.provider"));

@@ -46,20 +46,16 @@ import ghidra.util.HelpLocation;
 import ghidra.util.classfinder.ClassSearcher;
 import ghidra.util.datastruct.WeakDataStructureFactory;
 import ghidra.util.datastruct.WeakSet;
-import java.awt.Dialog;
+
 import java.awt.Frame;
 import java.awt.Window;
 import java.io.File;
-import org.exbin.bined.ghidra.gui.BinEdToolbarPanel;
+
 import org.exbin.framework.App;
-import org.exbin.framework.bined.BinEdEditorComponent;
-import org.exbin.framework.bined.BinEdFileHandler;
 import org.exbin.framework.bined.BinEdFileManager;
 import org.exbin.framework.bined.BinedModule;
-import org.exbin.framework.frame.FrameModule;
+import org.exbin.framework.editor.api.EditorProvider;
 import org.exbin.framework.frame.api.FrameModuleApi;
-import org.exbin.framework.utils.WindowUtils;
-import org.exbin.framework.window.api.gui.CloseControlPanel;
 
 public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 		implements DomainObjectListener, Navigatable {
@@ -93,8 +89,8 @@ public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
         if (frame == null) {
             frame = tool.getToolFrame();
         }
-// TODO		FrameModule frameModule = App.getModule(FrameModule.class);
-//		frameModule.setFrame(frame);
+//		BinedModule binEdModule = App.getModule(BinedModule.class);
+//		binEdModule.setFrame(frame);
 	}
 
 	protected ProgramByteViewerComponentProvider(PluginTool tool,
@@ -798,38 +794,8 @@ public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
             int dialogResult = fileChooser.showOpenDialog(frameModule.getFrame());
             if (dialogResult == JFileChooser.APPROVE_OPTION) {
                 File file = fileChooser.getSelectedFile();
-/*
-                BinEdFileManager fileManager = binedManager.getFileManager();
-                BinEdFileHandler fileHandler = new BinEdFileHandler();
-                fileManager.initFileHandler(fileHandler);
-                binedManager.initFileHandler(fileHandler);
-                
-                fileHandler.loadFromFile(file.toURI(), null);
-                BinEdEditorComponent editorComponent = fileHandler.getEditorComponent();
-                BinEdToolbarPanel toolbarPanel = editorComponent.getToolbarPanel();
-                toolbarPanel.setUndoHandler(editorComponent.getUndoHandler().get(), (event) -> {
-                    fileHandler.saveDocument();
-                });
-                editorComponent.getCodeArea().addDataChangedListener(() -> toolbarPanel.updateUndoState());
-
-                CloseControlPanel closeControlPanel = new CloseControlPanel();
-                JComponent component = editorComponent.getComponent();
-                JPanel dialogPanel = WindowUtils.createDialogPanel(component, closeControlPanel);
-                WindowUtils.DialogWrapper dialog = WindowUtils.createDialog(dialogPanel, frameModule.getFrame(), "BinEd", Dialog.ModalityType.APPLICATION_MODAL);
-                closeControlPanel.setHandler(() -> {
-                    dialog.close();
-                });
-                ((JDialog) dialog.getWindow()).setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-                ((JDialog) dialog.getWindow()).addWindowListener(new WindowAdapter() {
-                    @Override
-                    public void windowClosing(WindowEvent e) {
-                        if (BinEdManager.getInstance().releaseFile(fileHandler)) {
-                            dialog.dispose();
-                        }
-                    }
-                });
-                dialog.showCentered(frameModule.getFrame());
-                dialog.dispose(); */
+				EditorProvider editorProvider = binedModule.getEditorProvider();
+				editorProvider.openFile(file.toURI(), null);
             }
 		}
 	}

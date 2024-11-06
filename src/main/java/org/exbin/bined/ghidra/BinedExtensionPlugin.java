@@ -34,7 +34,7 @@ import ghidra.framework.plugintool.util.PluginStatus;
 import ghidra.program.model.listing.Program;
 import ghidra.program.util.ProgramSelection;
 import ghidra.util.SystemUtilities;
-import org.exbin.bined.ghidra.main.BinEdGhidraFileProvider;
+import org.exbin.bined.ghidra.main.BinEdGhidraEditorProvider;
 import org.exbin.framework.App;
 import org.exbin.framework.Module;
 import org.exbin.framework.ModuleProvider;
@@ -244,6 +244,7 @@ public class BinedExtensionPlugin extends AbstractByteViewerPlugin<ProgramByteVi
         private void init() {
             PreferencesModuleApi preferencesModule = App.getModule(PreferencesModuleApi.class);
             preferencesModule.setupAppPreferences(BinedExtensionPlugin.class);
+//            preferencesModule.setAppPreferences(new BinEdPreferencesWrapper(new SaveState()));
 
             FrameModuleApi frameModule = App.getModule(FrameModuleApi.class);
             frameModule.createMainMenu();
@@ -266,7 +267,7 @@ public class BinedExtensionPlugin extends AbstractByteViewerPlugin<ProgramByteVi
                 Logger.getLogger(BinedExtensionPlugin.class.getName()).log(Level.SEVERE, null, ex);
             }
 
-            BinEdGhidraFileProvider editorProvider = new BinEdGhidraFileProvider();
+            BinEdGhidraEditorProvider editorProvider = new BinEdGhidraEditorProvider();
             BinedModule binedModule = App.getModule(BinedModule.class);
             binedModule.setEditorProvider(editorProvider);
 
@@ -294,6 +295,7 @@ public class BinedExtensionPlugin extends AbstractByteViewerPlugin<ProgramByteVi
             binedMacroModule.setEditorProvider(editorProvider);
 
             binedModule.registerCodeAreaPopupMenu();
+            binedModule.registerOptionsPanels();
             binedSearchModule.registerEditFindPopupMenuActions();
             binedOperationModule.registerBlockEditPopupMenuActions();
             binedToolContentModule.registerClipboardContentMenu();

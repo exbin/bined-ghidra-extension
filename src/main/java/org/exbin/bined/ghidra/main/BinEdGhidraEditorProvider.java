@@ -20,7 +20,7 @@ import org.exbin.bined.swing.section.SectCodeArea;
 import org.exbin.framework.App;
 import org.exbin.framework.action.api.ComponentActivationListener;
 import org.exbin.framework.bined.BinEdFileHandler;
-import org.exbin.framework.editor.api.MultiEditorProvider;
+import org.exbin.framework.bined.BinaryMultiEditorProvider;
 import org.exbin.framework.file.api.FileHandler;
 import org.exbin.framework.file.api.FileType;
 import org.exbin.framework.frame.api.FrameModuleApi;
@@ -32,7 +32,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.swing.JComponent;
-import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -44,18 +43,15 @@ import java.util.Optional;
  * @author ExBin Project (https://exbin.org)
  */
 @ParametersAreNonnullByDefault
-public class BinEdGhidraFileProvider implements MultiEditorProvider {
+public class BinEdGhidraEditorProvider extends BinaryMultiEditorProvider {
 
-    @Nullable
-    protected FileHandler activeFile = null;
-
-    public BinEdGhidraFileProvider() {
+    public BinEdGhidraEditorProvider() {
     }
 
     @Nonnull
     @Override
     public List<FileHandler> getFileHandlers() {
-        return null;
+        return List.of(activeFile);
     }
 
     @Nonnull
@@ -66,43 +62,46 @@ public class BinEdGhidraFileProvider implements MultiEditorProvider {
 
     @Override
     public void saveFile(FileHandler fileHandler) {
-
+        throw new IllegalStateException();
     }
 
     @Override
     public void saveAsFile(FileHandler fileHandler) {
-
+        throw new IllegalStateException();
     }
 
     @Override
     public void closeFile() {
-
+        throw new IllegalStateException();
     }
 
     @Override
     public void closeFile(FileHandler fileHandler) {
-
+        throw new IllegalStateException();
     }
 
     @Override
     public void closeOtherFiles(FileHandler fileHandler) {
-
+        throw new IllegalStateException();
     }
 
     @Override
     public void closeAllFiles() {
-
+        throw new IllegalStateException();
     }
 
     @Override
     public void saveAllFiles() {
-
+        throw new IllegalStateException();
     }
 
     @Nonnull
     @Override
     public JComponent getEditorComponent() {
-        return null;
+        if (activeFile == null) {
+            return null;
+        }
+        return activeFile.getComponent();
     }
 
     @Nonnull
@@ -148,33 +147,34 @@ public class BinEdGhidraFileProvider implements MultiEditorProvider {
     }
 
     @Override
-    public void openFile(URI uri, FileType fileType) {
+    public void openFile(URI fileUri, FileType fileType) {
+        getActiveFile().get().loadFromFile(fileUri, fileType);
 
     }
 
     @Override
     public void setModificationListener(EditorModificationListener editorModificationListener) {
-
+        throw new IllegalStateException();
     }
 
     @Override
     public void newFile() {
-
+        throw new IllegalStateException();
     }
 
     @Override
     public void openFile() {
-
+        throw new IllegalStateException();
     }
 
     @Override
     public void saveFile() {
-
+        throw new IllegalStateException();
     }
 
     @Override
     public void saveAsFile() {
-
+        throw new IllegalStateException();
     }
 
     @Override
@@ -183,54 +183,12 @@ public class BinEdGhidraFileProvider implements MultiEditorProvider {
     }
 
     @Override
-    public boolean releaseFile(FileHandler fileHandler) {
-        return false;
-    }
-
-    @Override
-    public boolean releaseAllFiles() {
-        return false;
-    }
-
-    @Override
     public void loadFromFile(String s) throws URISyntaxException {
-
+        throw new IllegalStateException();
     }
 
     @Override
     public void loadFromFile(URI uri, @Nullable FileType fileType) {
-
+        throw new IllegalStateException();
     }
-
-    @Nonnull
-    @Override
-    public Optional<File> getLastUsedDirectory() {
-        return Optional.empty();
-    }
-
-    @Override
-    public void setLastUsedDirectory(@Nullable File file) {
-
-    }
-
-    @Override
-    public void updateRecentFilesList(URI uri, FileType fileType) {
-
-    }
-
-/*    public void openFile(@Nullable ProgramByteBlockSet blockSet) {
-        SectCodeArea codeArea = getCodeArea();
-        BinaryData binaryData;
-        if (blockSet == null) {
-            binaryData = EmptyBinaryData.INSTANCE;
-            codeArea.setEditMode(EditMode.READ_ONLY);
-        } else {
-            binaryData = new ByteBlocksBinaryData(blockSet);
-            codeArea.setEditMode(EditMode.INPLACE);
-        }
-        documentOriginalSize = binaryData.getDataSize();
-//        title = blockSet.
-                
-        codeArea.setContentData(binaryData);
-    } */
 }

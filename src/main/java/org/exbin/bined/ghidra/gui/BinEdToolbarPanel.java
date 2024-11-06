@@ -52,8 +52,8 @@ public class BinEdToolbarPanel extends javax.swing.JPanel {
     private final java.util.ResourceBundle operationUndoResourceBundle;
 
     private Control codeAreaControl;
-    private AbstractAction optionsAction;
-    private AbstractAction onlineHelpAction;
+    private ActionListener optionsAction;
+    private ActionListener onlineHelpAction;
     private ActionListener saveAction = null;
 
     private BinaryDataUndoRedo undoRedo;
@@ -181,11 +181,11 @@ public class BinEdToolbarPanel extends javax.swing.JPanel {
         updateCycleButtonState();
     }
 
-    public void setOptionsAction(AbstractAction optionsAction) {
+    public void setOptionsAction(ActionListener optionsAction) {
         this.optionsAction = optionsAction;
     }
 
-    public void setOnlineHelpAction(AbstractAction onlineHelpAction) {
+    public void setOnlineHelpAction(ActionListener onlineHelpAction) {
         this.onlineHelpAction = onlineHelpAction;
     }
 
