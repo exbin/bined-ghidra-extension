@@ -1,7 +1,5 @@
 buildscript {
     repositories {
-        mavenLocal()
-        jcenter()
         maven {
             url "https://plugins.gradle.org/m2/"
         }    
@@ -12,9 +10,8 @@ plugins {
     id 'java'
     id 'distribution'
 }
-import org.gradle.util.VersionNumber
 
-version = '0.2.1-SNAPSHOT'
+version = '0.2.2-SNAPSHOT'
 
 sourceCompatibility = '21'
 
@@ -22,7 +19,7 @@ sourceCompatibility = '21'
 
 ext {
     binedLibraryVersion = '0.3.0-SNAPSHOT'
-    binedAppLibraryVersion = '0.3.0-SNAPSHOT'
+    binedAppLibraryVersion = '0.2.4'
     exbinFrameworkVersion = '0.3.0-SNAPSHOT'
     binaryDataVersion = '0.2.2-SNAPSHOT'
 }
@@ -53,17 +50,7 @@ artifacts {
 task sourceJar(type: Jar) {
     archiveClassifier = 'sources'
     from sourceSets.main.java
-}
-
-javadoc {
-    if (JavaVersion.current() != JavaVersion.VERSION_1_8) {
-        options.addBooleanOption('html5', true)
-    }
-}
-
-task javadocJar (type: Jar, dependsOn: javadoc) {
-    archiveClassifier = 'javadoc'
-    from javadoc.destinationDir
+    from sourceSets.main.resources
 }
 
 if (!hasProperty('mainClass')) {
@@ -73,18 +60,28 @@ if (!hasProperty('mainClass')) {
 task buildPack (type: Zip, dependsOn: tasks.jar) {
     archiveBaseName = "bined-ghidra-extension"
     
-    into ('BinedExtension') {
+    into ('bined-ghidra-extension') {
         duplicatesStrategy = 'exclude'
         from (jar) {
             into 'lib'
-            rename { filename -> "BinedExtension.jar" }
+            rename { filename -> "bined-ghidra-extension.jar" }
+        }
+
+        // final Zip zipTask = project.getTasks().create("zipTask", Zip.class)
+        // zipTask.from("${projectDir}/src")
+        // from (zipTask.archiveFile)
+        // TODO: Replace with archive of src directory
+        from (sourceJar) {
+            into 'lib'
+            rename { filename -> "bined-ghidra-extension-src-${version}.zip" }
         }
 
         from (configurations.runtimeClasspath) {
-            include 'bined*.jar'
-            include 'binary_data*.jar'
-            include 'jdom-legacy*.jar'
-            include 'bcprov-jdk15on-1.70.jar'
+            include '*'
+//            include 'bined*.jar'
+//            include 'binary_data*.jar'
+//            include 'jdom-legacy*.jar'
+//            include 'bcprov-jdk18on-1.80.jar'
             into 'lib'
         }
 
@@ -100,6 +97,7 @@ task buildPack (type: Zip, dependsOn: tasks.jar) {
     from 'src/dist/readme.txt'
 }
 // publish.dependsOn buildPack
+buildPack.dependsOn assemble
 
 def binedLibrary = { String libName ->
     return (libName.endsWith('-SNAPSHOTX')) ? ":${libName}-${binedLibraryVersion}" : "org.exbin.bined:${libName}:${binedLibraryVersion}"
@@ -119,6 +117,7 @@ def binaryDataLibrary = { String libName ->
 
 repositories {
     mavenCentral()
+    mavenLocal()
     flatDir {
         dirs "lib"
     }
@@ -204,11 +203,11 @@ dependencies {
     implementation binedLibrary('bined-swing')
     implementation binedLibrary('bined-swing-section')
     implementation binaryDataLibrary('binary_data')
-    implementation binaryDataLibrary('binary_data-paged')
+    implementation binaryDataLibrary('binary_data-array')
     implementation binaryDataLibrary('binary_data-delta')
 
     compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
-    implementation group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.70'
+//    implementation group: 'org.bouncycastle', name: 'bcprov-jdk18on', version: '1.80'
     implementation "org.jdom:jdom-legacy:1.1.3"
 
     testImplementation group : 'junit', name: 'junit', version: '4.13.2'

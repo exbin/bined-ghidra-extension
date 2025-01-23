@@ -43,9 +43,12 @@ import org.exbin.framework.about.api.AboutModuleApi;
 import org.exbin.framework.action.ActionModule;
 import org.exbin.framework.action.api.ActionModuleApi;
 import org.exbin.framework.action.api.ComponentActivationListener;
-import org.exbin.framework.action.api.MenuGroup;
-import org.exbin.framework.action.api.MenuPosition;
+import org.exbin.framework.action.api.GroupMenuContributionRule;
+import org.exbin.framework.action.api.MenuContribution;
+import org.exbin.framework.action.api.MenuManagement;
+import org.exbin.framework.action.api.PositionMenuContributionRule;
 import org.exbin.framework.action.api.PositionMode;
+import org.exbin.framework.action.api.SeparationMenuContributionRule;
 import org.exbin.framework.action.api.SeparationMode;
 import org.exbin.framework.bined.BinedModule;
 import org.exbin.framework.bined.bookmarks.BinedBookmarksModule;
@@ -278,7 +281,6 @@ public class BinedExtensionPlugin extends AbstractByteViewerPlugin<ProgramByteVi
             binedOperationModule.setEditorProvider(editorProvider);
 
             BinedOperationBouncycastleModule binedOperationBouncycastleModule = App.getModule(BinedOperationBouncycastleModule.class);
-            binedOperationBouncycastleModule.setEditorProvider(editorProvider);
 
             BinedToolContentModule binedToolContentModule = App.getModule(BinedToolContentModule.class);
 
@@ -289,7 +291,6 @@ public class BinedExtensionPlugin extends AbstractByteViewerPlugin<ProgramByteVi
             binedCompareModule.registerToolsOptionsMenuActions();
 
             BinedBookmarksModule binedBookmarksModule = App.getModule(BinedBookmarksModule.class);
-            binedBookmarksModule.setEditorProvider(editorProvider);
 
             BinedMacroModule binedMacroModule = App.getModule(BinedMacroModule.class);
             binedMacroModule.setEditorProvider(editorProvider);
@@ -306,26 +307,46 @@ public class BinedExtensionPlugin extends AbstractByteViewerPlugin<ProgramByteVi
             binedBookmarksModule.registerBookmarksPopupMenuActions();
 
             String toolsSubMenuId = BinedExtensionPlugin.PLUGIN_PREFIX + "toolsMenu";
-            actionModule.registerMenu(toolsSubMenuId, BinedModule.MODULE_ID);
+            MenuManagement menuManagement = actionModule.getMenuManagement(BinedModule.MODULE_ID);
+            menuManagement.registerMenu(toolsSubMenuId);
             Action positionCodeTypeSubMenuAction = new AbstractAction("Tools") {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                 }
             };
             // positionCodeTypeSubMenuAction.putValue(Action.SHORT_DESCRIPTION, resourceBundle.getString("positionCodeTypeSubMenu.shortDescription"));
-            actionModule.registerMenuItem(BinedModule.CODE_AREA_POPUP_MENU_ID, BinedModule.MODULE_ID, toolsSubMenuId, positionCodeTypeSubMenuAction, new MenuPosition(PositionMode.BOTTOM_LAST));
-            actionModule.registerMenuItem(toolsSubMenuId, BinedModule.MODULE_ID, binedCompareModule.createCompareFilesAction(), new MenuPosition(PositionMode.TOP));
-            actionModule.registerMenuItem(toolsSubMenuId, BinedModule.MODULE_ID, binedToolContentModule.createClipboardContentAction(), new MenuPosition(PositionMode.TOP));
-            actionModule.registerMenuItem(toolsSubMenuId, BinedModule.MODULE_ID, binedToolContentModule.createDragDropContentAction(), new MenuPosition(PositionMode.TOP));
+            MenuContribution contribution = menuManagement.registerMenuItem(BinedModule.CODE_AREA_POPUP_MENU_ID, toolsSubMenuId, positionCodeTypeSubMenuAction);
+            menuManagement.registerMenuRule(contribution, new PositionMenuContributionRule(PositionMode.BOTTOM_LAST));
+            contribution = menuManagement.registerMenuItem(toolsSubMenuId, binedCompareModule.createCompareFilesAction());
+            menuManagement.registerMenuRule(contribution, new PositionMenuContributionRule(PositionMode.TOP));
+            contribution = menuManagement.registerMenuItem(toolsSubMenuId, binedToolContentModule.createClipboardContentAction());
+            menuManagement.registerMenuRule(contribution, new PositionMenuContributionRule(PositionMode.TOP));
+            contribution = menuManagement.registerMenuItem(toolsSubMenuId, binedToolContentModule.createDragDropContentAction());
+            menuManagement.registerMenuRule(contribution, new PositionMenuContributionRule(PositionMode.TOP));
 
             String aboutMenuGroup = BinedExtensionPlugin.PLUGIN_PREFIX + "helpAboutMenuGroup";
-            actionModule.registerMenuGroup(BinedModule.CODE_AREA_POPUP_MENU_ID, new MenuGroup(aboutMenuGroup, new MenuPosition(PositionMode.BOTTOM_LAST), SeparationMode.ABOVE));
-            actionModule.registerMenuItem(BinedModule.CODE_AREA_POPUP_MENU_ID, HelpOnlineModule.MODULE_ID, helpOnlineModule.createOnlineHelpAction(), new MenuPosition(aboutMenuGroup));
-            actionModule.registerMenuItem(BinedModule.CODE_AREA_POPUP_MENU_ID, AboutModule.MODULE_ID, aboutModule.createAboutAction(), new MenuPosition(aboutMenuGroup));
+            contribution = menuManagement.registerMenuGroup(BinedModule.CODE_AREA_POPUP_MENU_ID, aboutMenuGroup);
+            menuManagement.registerMenuRule(contribution, new PositionMenuContributionRule(PositionMode.BOTTOM_LAST));
+            menuManagement.registerMenuRule(contribution, new SeparationMenuContributionRule(SeparationMode.ABOVE));
+            contribution = menuManagement.registerMenuItem(BinedModule.CODE_AREA_POPUP_MENU_ID, helpOnlineModule.createOnlineHelpAction());
+            menuManagement.registerMenuRule(contribution, new GroupMenuContributionRule(aboutMenuGroup));
+            contribution = menuManagement.registerMenuItem(BinedModule.CODE_AREA_POPUP_MENU_ID, aboutModule.createAboutAction());
+            menuManagement.registerMenuRule(contribution, new GroupMenuContributionRule(aboutMenuGroup));
 
             ComponentActivationListener componentActivationListener =
                     frameModule.getFrameHandler().getComponentActivationListener();
             componentActivationListener.updated(EditorProvider.class, editorProvider);
+        }
+
+        @Nonnull
+        @Override
+        public Class getManifestClass() {
+            return BinedExtensionPlugin.class;
+        }
+
+        @Override
+        public void launch(String s, String[] strings) {
+
         }
 
         @Override
