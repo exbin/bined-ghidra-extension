@@ -24,9 +24,31 @@ Features
 Compiling
 ---------
 
-Set GHIDRA_INSTALL_DIR property to path to Ghidra installation.
-
 Java Development Kit (JDK) version 21 or later is required to build this project.
+
+Currently dependency libraries from the bined editor are expected to be present in the local maven repository.
+
+You can try to run following commands. Start at parent directory to "bined" repo directory.
+
+    git clone https://github.com/exbin/exbin-auxiliary-java.git
+    cd exbin-auxiliary-java
+    gradlew build publish
+    cd ..
+    git clone https://github.com/exbin/bined-lib-java.git
+    cd bined-lib-java
+    gradlew build publish
+    cd ..
+    git clone https://github.com/exbin/exbin-framework-java.git
+    cd exbin-framework-java
+    gradlew build publish
+    cd .. 
+    git clone https://github.com/exbin/bined.git
+    cd bined
+    gradlew build publish
+    cd .. 
+
+
+Set GHIDRA_INSTALL_DIR property to path to Ghidra installation.
 
 Run:
 
