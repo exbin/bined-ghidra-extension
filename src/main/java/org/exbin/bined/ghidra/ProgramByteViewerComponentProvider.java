@@ -50,12 +50,15 @@ import ghidra.util.datastruct.WeakSet;
 import java.awt.Frame;
 import java.awt.Window;
 import java.io.File;
+import org.exbin.bined.ghidra.main.BinEdGhidraDocking;
+import org.exbin.bined.jaguif.document.BinaryFileDocument;
 
-import org.exbin.framework.App;
-import org.exbin.framework.bined.BinEdFileManager;
-import org.exbin.framework.bined.BinedModule;
-import org.exbin.framework.editor.api.EditorProvider;
-import org.exbin.framework.frame.api.FrameModuleApi;
+import org.exbin.jaguif.App;
+import org.exbin.jaguif.context.api.ContextStateManagement;
+import org.exbin.jaguif.docking.api.ContextDocking;
+import org.exbin.jaguif.document.api.ContextDocument;
+import org.exbin.jaguif.file.api.FileDocumentSource;
+import org.exbin.jaguif.frame.api.FrameModuleApi;
 
 public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 		implements DomainObjectListener, Navigatable {
@@ -787,15 +790,19 @@ public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 
 		@Override
 		public void actionPerformed(ActionContext context) {
-			BinedModule binedModule = App.getModule(BinedModule.class);
             FrameModuleApi frameModule = App.getModule(FrameModuleApi.class);
-
             JFileChooser fileChooser = new JFileChooser();
             int dialogResult = fileChooser.showOpenDialog(frameModule.getFrame());
             if (dialogResult == JFileChooser.APPROVE_OPTION) {
                 File file = fileChooser.getSelectedFile();
-				EditorProvider editorProvider = binedModule.getEditorProvider();
-				editorProvider.openFile(file.toURI(), null);
+                BinaryFileDocument fileDocument = new BinaryFileDocument();
+                fileDocument.loadFrom(new FileDocumentSource(file));
+                ContextStateManagement contextManager = frameModule.getFrameStateManager();
+                BinEdGhidraDocking docking = (BinEdGhidraDocking) contextManager.getActiveState(ContextDocking.class);
+                docking.setActiveDocument(fileDocument);
+                fileDocument.fileSync();
+                contextManager.updateActiveState(ContextDocument.class, fileDocument, BinaryFileDocument.UpdateType.ORIGINAL_SIZE);
+                contextManager.updateActiveState(ContextDocument.class, fileDocument, BinaryFileDocument.UpdateType.PROCESSING_MODE);
             }
 		}
 	}

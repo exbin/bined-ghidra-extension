@@ -13,40 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.exbin.bined.ghidra.options.gui;
+package org.exbin.bined.ghidra.settings.gui;
 
 import java.util.ResourceBundle;
-import javax.annotation.Nonnull;
-import javax.annotation.ParametersAreNonnullByDefault;
-import org.exbin.bined.ghidra.options.impl.IntegrationOptionsImpl;
-import org.exbin.framework.App;
-import org.exbin.framework.language.api.LanguageModuleApi;
-import org.exbin.framework.options.api.OptionsModifiedListener;
-import org.exbin.framework.options.api.OptionsComponent;
+import org.jspecify.annotations.NullMarked;
+import org.exbin.bined.ghidra.settings.IntegrationOptions;
+import org.exbin.jaguif.App;
+import org.exbin.jaguif.language.api.LanguageModuleApi;
+import org.exbin.jaguif.options.settings.api.SettingsComponent;
+import org.exbin.jaguif.options.settings.api.SettingsModifiedListener;
+import org.exbin.jaguif.options.settings.api.SettingsOptionsProvider;
 
 /**
  * Integration preference parameters panel.
- *
- * @author ExBin Project (https://exbin.org)
  */
-@ParametersAreNonnullByDefault
-public class IntegrationOptionsPanel extends javax.swing.JPanel implements OptionsComponent<IntegrationOptionsImpl> {
+@NullMarked
+public class IntegrationSettingsPanel extends javax.swing.JPanel implements SettingsComponent {
 
-    private final java.util.ResourceBundle resourceBundle = App.getModule(LanguageModuleApi.class).getBundle(IntegrationOptionsPanel.class);
-    private OptionsModifiedListener optionsModifiedListener;
+    private final java.util.ResourceBundle resourceBundle = App.getModule(LanguageModuleApi.class).getBundle(IntegrationSettingsPanel.class);
+    private SettingsModifiedListener settingsModifiedListener;
 
-    public IntegrationOptionsPanel() {
+    public IntegrationSettingsPanel() {
         initComponents();
     }
 
-    @Nonnull
     @Override
     public ResourceBundle getResourceBundle() {
         return resourceBundle;
     }
 
     @Override
-    public void saveToOptions(IntegrationOptionsImpl options) {
+    public void saveToOptions(SettingsOptionsProvider settingsOptionsProvider) {
+        IntegrationOptions options = settingsOptionsProvider.getSettingsOptions(IntegrationOptions.class);
         options.setRegisterFileMenuOpenAsBinary(openFileAsBinaryCheckBox.isSelected());
         options.setRegisterOpenFileAsBinaryViaToolbar(openFileToolbarBinaryCheckBox.isSelected());
         options.setRegisterContextOpenAsBinary(contextOpenAsBinaryCheckBox.isSelected());
@@ -58,7 +56,8 @@ public class IntegrationOptionsPanel extends javax.swing.JPanel implements Optio
     }
 
     @Override
-    public void loadFromOptions(IntegrationOptionsImpl options) {
+    public void loadFromOptions(SettingsOptionsProvider settingsOptionsProvider) {
+        IntegrationOptions options = settingsOptionsProvider.getSettingsOptions(IntegrationOptions.class);
         openFileAsBinaryCheckBox.setSelected(options.isRegisterFileMenuOpenAsBinary());
         openFileToolbarBinaryCheckBox.setSelected(options.isRegisterOpenFileAsBinaryViaToolbar());
         contextOpenAsBinaryCheckBox.setSelected(options.isRegisterContextOpenAsBinary());
@@ -192,35 +191,35 @@ public class IntegrationOptionsPanel extends javax.swing.JPanel implements Optio
     }// </editor-fold>//GEN-END:initComponents
 
     private void openFileAsBinaryCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_openFileAsBinaryCheckBoxStateChanged
-        setModified(true);
+        notifyModified();
     }//GEN-LAST:event_openFileAsBinaryCheckBoxStateChanged
 
     private void openFileToolbarBinaryCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_openFileToolbarBinaryCheckBoxStateChanged
-        setModified(true);
+        notifyModified();
     }//GEN-LAST:event_openFileToolbarBinaryCheckBoxStateChanged
 
     private void contextOpenAsBinaryCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_contextOpenAsBinaryCheckBoxStateChanged
-        setModified(true);
+        notifyModified();
     }//GEN-LAST:event_contextOpenAsBinaryCheckBoxStateChanged
 
     private void contextToolsOpenAsBinaryCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_contextToolsOpenAsBinaryCheckBoxStateChanged
-        setModified(true);
+        notifyModified();
     }//GEN-LAST:event_contextToolsOpenAsBinaryCheckBoxStateChanged
 
     private void openAsBinaryInDebugViewCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_openAsBinaryInDebugViewCheckBoxStateChanged
-        setModified(true);
+        notifyModified();
     }//GEN-LAST:event_openAsBinaryInDebugViewCheckBoxStateChanged
 
     private void byteToByteDiffToolCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_byteToByteDiffToolCheckBoxStateChanged
-        setModified(true);
+        notifyModified();
     }//GEN-LAST:event_byteToByteDiffToolCheckBoxStateChanged
 
     private void editAsBinaryForDbColumnCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_editAsBinaryForDbColumnCheckBoxStateChanged
-        setModified(true);
+        notifyModified();
     }//GEN-LAST:event_editAsBinaryForDbColumnCheckBoxStateChanged
 
     private void binaryMultiviewCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_binaryMultiviewCheckBoxStateChanged
-        setModified(true);
+        notifyModified();
     }//GEN-LAST:event_binaryMultiviewCheckBoxStateChanged
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -234,14 +233,14 @@ public class IntegrationOptionsPanel extends javax.swing.JPanel implements Optio
     private javax.swing.JCheckBox openFileToolbarBinaryCheckBox;
     // End of variables declaration//GEN-END:variables
 
-    private void setModified(boolean modified) {
-        if (optionsModifiedListener != null) {
-            optionsModifiedListener.wasModified();
+    private void notifyModified() {
+        if (settingsModifiedListener != null) {
+            settingsModifiedListener.notifyModified();
         }
     }
 
     @Override
-    public void setOptionsModifiedListener(OptionsModifiedListener listener) {
-        optionsModifiedListener = listener;
+    public void setSettingsModifiedListener(SettingsModifiedListener listener) {
+        settingsModifiedListener = listener;
     }
 }

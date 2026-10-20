@@ -4,11 +4,11 @@
   <NonVisualComponents>
     <Component class="javax.swing.JButton" name="saveFileButton">
       <Properties>
-        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-          <Image iconType="3" name="/org/exbin/bined/ghidra/resources/icons/document-save.png"/>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="new javax.swing.ImageIcon(getClass().getResource(dockingResourceBundle.getString(&quot;saveFileAction.smallIcon&quot;)))" type="code"/>
         </Property>
-        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/exbin/bined/ghidra/gui/resources/BinEdToolbarPanel.properties" key="BinEdToolbarPanel.saveFileButton.toolTipText" replaceFormat="resourceBundle.getString(&quot;{key}&quot;)"/>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="dockingResourceBundle.getString(&quot;saveFileAction.shortDescription&quot;)" type="code"/>
         </Property>
         <Property name="enabled" type="boolean" value="false"/>
         <Property name="focusable" type="boolean" value="false"/>
@@ -21,11 +21,11 @@
     </Component>
     <Component class="javax.swing.JButton" name="undoEditButton">
       <Properties>
-        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-          <Image iconType="3" name="/org/exbin/bined/ghidra/resources/icons/edit-undo.png"/>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="new javax.swing.ImageIcon(getClass().getResource(operationUndoResourceBundle.getString(&quot;editUndoAction.smallIcon&quot;)))" type="code"/>
         </Property>
-        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/exbin/bined/ghidra/gui/resources/BinEdToolbarPanel.properties" key="BinEdToolbarPanel.undoEditButton.toolTipText" replaceFormat="resourceBundle.getString(&quot;{key}&quot;)"/>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="operationUndoResourceBundle.getString(&quot;editUndoAction.shortDescription&quot;)" type="code"/>
         </Property>
         <Property name="focusable" type="boolean" value="false"/>
         <Property name="horizontalTextPosition" type="int" value="0"/>
@@ -37,11 +37,11 @@
     </Component>
     <Component class="javax.swing.JButton" name="redoEditButton">
       <Properties>
-        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-          <Image iconType="3" name="/org/exbin/bined/ghidra/resources/icons/edit-redo.png"/>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="new javax.swing.ImageIcon(getClass().getResource(operationUndoResourceBundle.getString(&quot;editRedoAction.smallIcon&quot;)))" type="code"/>
         </Property>
-        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/exbin/bined/ghidra/gui/resources/BinEdToolbarPanel.properties" key="BinEdToolbarPanel.redoEditButton.toolTipText" replaceFormat="resourceBundle.getString(&quot;{key}&quot;)"/>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="operationUndoResourceBundle.getString(&quot;editRedoAction.shortDescription&quot;)" type="code"/>
         </Property>
         <Property name="focusable" type="boolean" value="false"/>
         <Property name="horizontalTextPosition" type="int" value="0"/>
@@ -69,22 +69,22 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <Component id="controlToolBar" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="0" pref="338" max="32767" attributes="0"/>
+              <Component id="toolBar" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="0" pref="354" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <Component id="controlToolBar" min="-2" pref="20" max="-2" attributes="0"/>
+              <Component id="toolBar" min="-2" pref="20" max="-2" attributes="0"/>
               <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Container class="javax.swing.JToolBar" name="controlToolBar">
+    <Container class="javax.swing.JToolBar" name="toolBar">
       <Properties>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="null"/>
@@ -94,17 +94,17 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBoxLayout"/>
       <SubComponents>
-        <Component class="javax.swing.JToggleButton" name="showUnprintablesToggleButton">
+        <Component class="javax.swing.JToggleButton" name="showNonprintablesToggleButton">
           <Properties>
-            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/org/exbin/bined/ghidra/resources/icons/insert-pilcrow.png"/>
+            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="new javax.swing.ImageIcon(getClass().getResource(componentResourceBundle.getString(&quot;toggleNonprintablesAction.smallIcon&quot;)))" type="code"/>
             </Property>
-            <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/exbin/bined/ghidra/gui/resources/BinEdToolbarPanel.properties" key="showUnprintablesToggleButton.toolTipText" replaceFormat="resourceBundle.getString(&quot;{key}&quot;)"/>
+            <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="componentResourceBundle.getString(&quot;viewNonprintablesAction.shortDescription&quot;)" type="code"/>
             </Property>
           </Properties>
           <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showUnprintablesToggleButtonActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showNonprintablesToggleButtonActionPerformed"/>
           </Events>
         </Component>
         <Component class="javax.swing.JToolBar$Separator" name="separator1">

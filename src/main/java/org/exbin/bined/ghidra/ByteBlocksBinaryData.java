@@ -23,19 +23,18 @@ import java.io.OutputStream;
 import java.math.BigInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nonnull;
-import javax.annotation.ParametersAreNonnullByDefault;
+import org.jspecify.annotations.NullMarked;
 import org.exbin.auxiliary.binary_data.BinaryData;
-import org.exbin.auxiliary.binary_data.ByteArrayEditableData;
+import org.exbin.auxiliary.binary_data.BinaryDataInputStream;
+import org.exbin.auxiliary.binary_data.BinaryDataOutputStream;
+import org.exbin.auxiliary.binary_data.array.ByteArrayEditableData;
 import org.exbin.auxiliary.binary_data.EditableBinaryData;
 import org.exbin.auxiliary.binary_data.OutOfBoundsException;
 
 /**
  * Binary data convertor for block set.
- *
- * @author ExBin Project (https://exbin.org)
  */
-@ParametersAreNonnullByDefault
+@NullMarked
 public class ByteBlocksBinaryData implements EditableBinaryData {
 
     private final ProgramByteBlockSet blockSet;
@@ -80,13 +79,11 @@ public class ByteBlocksBinaryData implements EditableBinaryData {
         throw new IllegalStateException();
     }
 
-    @Nonnull
     @Override
     public BinaryData copy() {
         return new ByteBlocksBinaryData(blockSet);
     }
 
-    @Nonnull
     @Override
     public BinaryData copy(long startFrom, long length) {
         ByteArrayEditableData result = new ByteArrayEditableData();
@@ -106,12 +103,24 @@ public class ByteBlocksBinaryData implements EditableBinaryData {
 
     @Override
     public void saveToStream(OutputStream outputStream) throws IOException {
-        throw new UnsupportedOperationException();
+        // TODO Speed up with newly available block.getBytes if needed
+        try {
+            for (ByteBlock block : blockSet.getBlocks()) {
+                BigInteger length = block.getLength();
+                BigInteger pos = BigInteger.ZERO;
+                while (pos.compareTo(length) < 0) {
+                    outputStream.write(block.getByte(pos));
+                    pos = pos.add(BigInteger.ONE);
+                }
+            }
+        } catch (ByteBlockAccessException ex) {
+            System.getLogger(ByteBlocksBinaryData.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
     }
 
     @Override
     public InputStream getDataInputStream() {
-        throw new UnsupportedOperationException();
+        return new BinaryDataInputStream(this);
     }
 
     @Override
@@ -211,12 +220,14 @@ public class ByteBlocksBinaryData implements EditableBinaryData {
 
     @Override
     public void fillData(long startFrom, long length) {
-        throw new UnsupportedOperationException();
+        fillData(startFrom, length, (byte) 0);
     }
 
     @Override
     public void fillData(long startFrom, long length, byte fill) {
-        throw new UnsupportedOperationException();
+        for (long pos = startFrom; pos < startFrom + length; pos++) {
+            setByteInt(pos, fill);
+        }
     }
 
     @Override
@@ -236,7 +247,7 @@ public class ByteBlocksBinaryData implements EditableBinaryData {
 
     @Override
     public OutputStream getDataOutputStream() {
-        throw new UnsupportedOperationException();
+        return new BinaryDataOutputStream(this);
     }
     
     private void setByteInt(long position, byte value) {

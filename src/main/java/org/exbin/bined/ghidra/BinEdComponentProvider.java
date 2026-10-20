@@ -19,7 +19,6 @@ import docking.action.DockingAction;
 import generic.theme.GColor;
 import generic.theme.GIcon;
 import ghidra.GhidraOptions;
-import ghidra.GhidraOptions.CURSOR_MOUSE_BUTTON_NAMES;
 import ghidra.app.plugin.core.byteviewer.ByteViewerLayoutModel;
 import ghidra.app.plugin.core.format.ByteBlock;
 import ghidra.app.plugin.core.format.ByteBlockInfo;
@@ -43,24 +42,10 @@ import ghidra.util.task.SwingUpdateManager;
 import org.exbin.auxiliary.binary_data.BinaryData;
 import org.exbin.auxiliary.binary_data.EmptyBinaryData;
 import org.exbin.bined.EditMode;
-import org.exbin.bined.EditOperation;
 import org.exbin.bined.ghidra.gui.BinEdFilePanel;
-import org.exbin.bined.ghidra.main.BinEdGhidraEditorProvider;
 import org.exbin.bined.swing.section.SectCodeArea;
-import org.exbin.framework.App;
-import org.exbin.framework.bined.BinEdEditorProvider;
-import org.exbin.framework.bined.BinEdFileHandler;
-import org.exbin.framework.bined.BinEdFileManager;
-import org.exbin.framework.bined.BinaryStatusApi;
-import org.exbin.framework.bined.BinedModule;
-import org.exbin.framework.bined.FileHandlingMode;
-import org.exbin.framework.bined.action.GoToPositionAction;
-import org.exbin.framework.bined.gui.BinaryStatusPanel;
-import org.exbin.framework.bined.preferences.BinaryEditorPreferences;
-import org.exbin.framework.bined.preferences.EditorPreferences;
-import org.exbin.framework.editor.text.EncodingsHandler;
-import org.exbin.framework.file.api.FileHandler;
-import org.exbin.framework.preferences.api.PreferencesModuleApi;
+import org.exbin.jaguif.App;
+import org.exbin.jaguif.options.api.OptionsModuleApi;
 
 import javax.swing.JComponent;
 import java.awt.Color;
@@ -73,12 +58,18 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
-import static ghidra.GhidraOptions.CATEGORY_BROWSER_FIELDS;
-import static ghidra.GhidraOptions.CURSOR_HIGHLIGHT_BUTTON_NAME;
-import static ghidra.GhidraOptions.HIGHLIGHT_COLOR_NAME;
+import org.exbin.bined.jaguif.component.BinEdDataComponent;
+import org.exbin.bined.jaguif.document.BinEdFileManager;
+import org.exbin.bined.jaguif.document.BinaryFileDocument;
+import org.exbin.bined.jaguif.document.BinedDocumentModule;
+import org.exbin.bined.jaguif.document.settings.BinaryFileProcessingOptions;
+import org.exbin.bined.jaguif.search.BinedSearchModule;
+import org.exbin.jaguif.options.api.OptionsStorage;
+import org.exbin.jaguif.options.settings.api.OptionsSettingsManagement;
+import org.exbin.jaguif.options.settings.api.OptionsSettingsModuleApi;
+import org.exbin.jaguif.options.settings.api.SettingsOptionsProvider;
 
 public abstract class BinEdComponentProvider extends ComponentProviderAdapter
         implements OptionsChangeListener {
@@ -148,70 +139,26 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
 
         initializedDataFormatModelClassMap();
 
-        BinedModule binedModule = App.getModule(BinedModule.class);
-        BinEdGhidraEditorProvider editorProvider = (BinEdGhidraEditorProvider) binedModule.getEditorProvider();
-        PreferencesModuleApi preferencesModule = App.getModule(PreferencesModuleApi.class);
-        EditorPreferences editorPreferences = new EditorPreferences(preferencesModule.getAppPreferences());
-        BinEdFileHandler fileHandler = editorProvider.createFileHandler(0);
-        fileHandler.setNewData(editorPreferences.getFileHandlingMode());
-        editorProvider.setActiveFile(fileHandler);
-
-        BinEdFileManager fileManager = binedModule.getFileManager();
-        EncodingsHandler encodingsHandler = binedModule.getEncodingsHandler();
-        fileManager.registerStatusBar();
-        fileManager.setStatusControlHandler(new BinaryStatusPanel.StatusControlHandler() {
-            @Override
-            public void changeEditOperation(EditOperation editOperation) {
-                Optional<FileHandler> activeFile = editorProvider.getActiveFile();
-                if (activeFile.isPresent()) {
-                    ((BinEdFileHandler) activeFile.get()).getCodeArea().setEditOperation(editOperation);
-                }
-            }
-
-            @Override
-            public void changeCursorPosition() {
-                GoToPositionAction action = new GoToPositionAction();
-                action.setCodeArea(fileHandler.getCodeArea());
-                action.actionPerformed(null);
-            }
-
-            @Override
-            public void cycleEncodings() {
-                if (encodingsHandler != null) {
-                    encodingsHandler.cycleEncodings();
-                }
-            }
-
-            @Override
-            public void encodingsPopupEncodingsMenu(MouseEvent mouseEvent) {
-                if (encodingsHandler != null) {
-                    encodingsHandler.popupEncodingsMenu(mouseEvent);
-                }
-            }
-
-            @Override
-            public void changeMemoryMode(BinaryStatusApi.MemoryMode memoryMode) {
-                Optional<FileHandler> activeFile = editorProvider.getActiveFile();
-                if (activeFile.isPresent()) {
-                    BinEdFileHandler fileHandler = (BinEdFileHandler) activeFile.get();
-                    FileHandlingMode fileHandlingMode = fileHandler.getFileHandlingMode();
-                    FileHandlingMode newHandlingMode = memoryMode == BinaryStatusApi.MemoryMode.DELTA_MODE ? FileHandlingMode.DELTA : FileHandlingMode.MEMORY;
-                    if (newHandlingMode != fileHandlingMode) {
-                        PreferencesModuleApi preferencesModule = App.getModule(PreferencesModuleApi.class);
-                        BinaryEditorPreferences preferences = new BinaryEditorPreferences(preferencesModule.getAppPreferences());
-                        if (editorProvider.releaseFile(fileHandler)) {
-                            fileHandler.switchFileHandlingMode(newHandlingMode);
-                            preferences.getEditorPreferences().setFileHandlingMode(newHandlingMode);
-                        }
-                        ((BinEdEditorProvider) editorProvider).updateStatus();
-                    }
-                }
-            }
-        });
-        fileHandler.registerUndoHandler();
-
         filePanel = new BinEdFilePanel();
-        filePanel.setFileHandler(fileHandler);
+        BinaryFileDocument fileDocument = new BinaryFileDocument();
+        BinedDocumentModule binedDocumentModule = App.getModule(BinedDocumentModule.class);
+        BinEdFileManager fileManager = binedDocumentModule.getFileManager();
+        filePanel.setDocument(fileDocument);
+        BinEdDataComponent dataComponent = fileDocument.getDataComponent();
+        fileManager.initDataComponent(dataComponent);
+        fileManager.initCommandHandler(dataComponent);
+        BinedSearchModule searchModule = App.getModule(BinedSearchModule.class);
+        dataComponent.setSearchController(searchModule.createBinarySearchController(dataComponent));
+
+        OptionsModuleApi optionsModule = App.getModule(OptionsModuleApi.class);
+        OptionsStorage optionsStorage = optionsModule.getAppOptions();
+        fileDocument.setInitialProcessingMode(new BinaryFileProcessingOptions(optionsStorage).getFileProcessingMode());
+        
+        OptionsSettingsModuleApi optionsSettingsModule = App.getModule(OptionsSettingsModuleApi.class);
+        OptionsSettingsManagement settingsManager = optionsSettingsModule.getMainSettingsManager();
+        SettingsOptionsProvider settingsOptionsProvider = settingsManager.getSettingsOptionsProvider();
+        fileDocument.applySettings(settingsOptionsProvider);
+        
 //        filePanel.getToolbarPanel().setUndoHandler(fileHandler.getCodeAreaUndoHandler().get(), actionEvent -> {
 //            fileHandler.saveFile();
 //        });
@@ -266,7 +213,7 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
         SectCodeArea codeArea = filePanel.getCodeArea();
         BinaryData binaryData;
         if (blockSet == null) {
-            binaryData = EmptyBinaryData.INSTANCE;
+            binaryData = EmptyBinaryData.getInstance();
             codeArea.setEditMode(EditMode.READ_ONLY);
         } else {
             binaryData = new ByteBlocksBinaryData(blockSet);
@@ -293,11 +240,11 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
             if (optionName.equals(OPTION_FONT)) {
                 setFont(SystemUtilities.adjustForFontSizeOverride((Font) newValue));
             }
-        } else if (options.getName().equals(CATEGORY_BROWSER_FIELDS)) {
-            if (optionName.equals(CURSOR_HIGHLIGHT_BUTTON_NAME)) {
-                CURSOR_MOUSE_BUTTON_NAMES mouseButton = (CURSOR_MOUSE_BUTTON_NAMES) newValue;
+        } else if (options.getName().equals(GhidraOptions.CATEGORY_BROWSER_FIELDS)) {
+            if (optionName.equals(GhidraOptions.CURSOR_HIGHLIGHT_BUTTON_NAME)) {
+                GhidraOptions.CURSOR_MOUSE_BUTTON_NAMES mouseButton = (GhidraOptions.CURSOR_MOUSE_BUTTON_NAMES) newValue;
 //				wrapperFile.setHighlightButton(mouseButton.getMouseEventID());
-            } else if (optionName.equals(HIGHLIGHT_COLOR_NAME)) {
+            } else if (optionName.equals(GhidraOptions.HIGHLIGHT_COLOR_NAME)) {
 //				wrapperFile.setMouseButtonHighlightColor((Color) newValue);
             }
         }
@@ -439,7 +386,7 @@ public abstract class BinEdComponentProvider extends ComponentProviderAdapter
             boolean updateViewPosition) {
 
         if (model.getName().equals(HexFormatModel.NAME)) {
-            model.setGroupSize(hexGroupSize);
+            // TODO model.setGroupSize(hexGroupSize);
         }
 
         String viewName = model.getName();

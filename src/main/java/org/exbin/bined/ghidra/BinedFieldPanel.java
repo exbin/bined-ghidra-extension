@@ -41,18 +41,14 @@ import ghidra.program.model.address.*;
 import ghidra.util.Msg;
 import help.Help;
 import help.HelpService;
-import javax.annotation.ParametersAreNonnullByDefault;
+import org.jspecify.annotations.NullMarked;
 
 import org.exbin.bined.ghidra.gui.BinEdFilePanel;
-import org.exbin.framework.bined.BinEdEditorComponent;
-import org.exbin.framework.bined.gui.BinEdComponentPanel;
 
 /**
  * BinEd component FieldViewer.
- *
- * @author ExBin Project (https://exbin.org)
  */
-@ParametersAreNonnullByDefault
+@NullMarked
 public class BinedFieldPanel extends FieldPanel implements FieldMouseListener,
 		FieldLocationListener, FieldSelectionListener, FieldInputListener {
     

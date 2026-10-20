@@ -21,52 +21,199 @@ import org.exbin.bined.highlight.swing.NonprintablesCodeAreaAssessor;
 import org.exbin.bined.swing.CodeAreaSwingUtils;
 import org.exbin.bined.swing.capability.ColorAssessorPainterCapable;
 import org.exbin.bined.swing.section.SectCodeArea;
-import org.exbin.framework.App;
-import org.exbin.framework.bined.BinEdFileHandler;
-import org.exbin.framework.bined.BinEdFileManager;
-import org.exbin.framework.bined.BinedModule;
-import org.exbin.framework.bined.gui.BinEdComponentPanel;
-import org.exbin.framework.bined.gui.BinaryStatusPanel;
-import org.exbin.framework.bined.handler.CodeAreaPopupMenuHandler;
-import org.exbin.framework.language.api.LanguageModuleApi;
-import org.exbin.framework.options.api.OptionsModuleApi;
-import org.exbin.framework.utils.DesktopUtils;
+import org.exbin.jaguif.App;
+import org.exbin.bined.jaguif.component.gui.BinEdComponentPanel;
+import org.exbin.jaguif.language.api.LanguageModuleApi;
+import org.exbin.jaguif.utils.DesktopUtils;
 
-import javax.annotation.Nonnull;
-import javax.annotation.ParametersAreNonnullByDefault;
+import org.jspecify.annotations.NullMarked;
 import javax.swing.AbstractAction;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import javax.swing.Action;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
+import javax.swing.JViewport;
+import javax.swing.KeyStroke;
+import org.exbin.bined.ghidra.main.BinEdGhidraDocking;
+import org.exbin.bined.jaguif.bookmarks.BinedBookmarksModule;
+import org.exbin.bined.jaguif.compare.BinedCompareModule;
+import org.exbin.bined.jaguif.compare.action.CompareFilesAction;
+import org.exbin.bined.jaguif.component.BinedComponentModule;
+import org.exbin.bined.jaguif.document.BinaryFileDocument;
+import org.exbin.bined.jaguif.macro.BinedMacroModule;
+import org.exbin.bined.operation.command.BinaryDataUndoRedo;
+import org.exbin.jaguif.action.api.ActionConsts;
+import org.exbin.jaguif.action.api.ActionContextChange;
+import org.exbin.jaguif.action.api.ActionModuleApi;
+import org.exbin.jaguif.action.api.DialogParentComponent;
+import org.exbin.jaguif.context.ContextStateManager;
+import org.exbin.jaguif.context.api.ContextChange;
+import org.exbin.jaguif.context.api.ContextChangeListener;
+import org.exbin.jaguif.context.api.ContextComponent;
+import org.exbin.jaguif.context.api.ContextModuleApi;
+import org.exbin.jaguif.context.api.ContextMonitoringManagement;
+import org.exbin.jaguif.context.api.ContextMonitoringRegistration;
+import org.exbin.jaguif.context.api.ContextStateManagement;
+import org.exbin.jaguif.context.api.StateUpdateType;
+import org.exbin.jaguif.docking.api.ContextDocking;
+import org.exbin.jaguif.document.api.ContextDocument;
+import org.exbin.jaguif.frame.api.FrameModuleApi;
+import org.exbin.jaguif.options.settings.action.SettingsAction;
+import org.exbin.jaguif.options.settings.api.OptionsSettingsModuleApi;
+import org.exbin.jaguif.search.SearchModule;
+import org.exbin.jaguif.search.action.FindReplaceActions;
+import org.exbin.jaguif.search.api.ContextSearch;
+import org.exbin.jaguif.search.api.SearchModuleApi;
+import org.exbin.jaguif.statusbar.api.StatusBar;
+import org.exbin.jaguif.statusbar.api.StatusBarModuleApi;
+import org.exbin.jaguif.text.encoding.ContextEncoding;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Binary editor file panel.
- *
- * @author ExBin Project (https://exbin.org)
  */
-@ParametersAreNonnullByDefault
+@NullMarked
 public class BinEdFilePanel extends JPanel {
+    
+    public static final String ACTION_FIND = "find";
+    public static final String ACTION_REPLACE = "replace";
+    public static final String ACTION_UNDO = "undo";
+    public static final String ACTION_REDO = "redo";
 
-    private BinEdFileHandler fileHandler;
-    private BinEdToolbarPanel toolbarPanel = new BinEdToolbarPanel();
-    private BinaryStatusPanel statusPanel;
+    protected BinaryFileDocument fileDocument;
+    protected BinEdToolbarPanel toolbarPanel = new BinEdToolbarPanel();
+    protected ContextStateManagement statusContextManager;
+    protected ContextChangeListener contextChangeListener;
+    protected StatusBar statusBar;
 
     public BinEdFilePanel() {
         super(new BorderLayout());
         add(toolbarPanel, BorderLayout.NORTH);
+
+        FrameModuleApi frameModule = App.getModule(FrameModuleApi.class);
+        StatusBarModuleApi statusBarModule = App.getModule(StatusBarModuleApi.class);
+        ContextModuleApi contextModule = App.getModule(ContextModuleApi.class);
+        ContextStateManagement contextManager = frameModule.getFrameStateManager();
+        statusContextManager = contextModule.createChildStateManager(contextManager);
+        contextChangeListener = new ContextChangeListener() {
+            @Override
+            public <T> void notifyStateChanged(Class<T> stateClass, @Nullable T activeState) {
+                if (fileDocument == null) {
+                    return;
+                }
+
+                if (stateClass == ContextDocument.class && activeState != fileDocument) {
+                    return;
+                }
+
+                if (stateClass == ContextComponent.class && activeState != fileDocument.getDataComponent()) {
+                    return;
+                }
+
+                if (stateClass == ContextEncoding.class && activeState != fileDocument.getDataComponent()) {
+                    return;
+                }
+
+                statusContextManager.changeActiveState(stateClass, activeState);
+            }
+
+            @Override
+            public <T> void notifyStateUpdated(Class<T> stateClass, T activeState, StateUpdateType stateUpdateType) {
+                if (fileDocument == null) {
+                    return;
+                }
+
+                if (stateClass == ContextDocument.class && activeState != fileDocument) {
+                    return;
+                }
+
+                if (stateClass == ContextComponent.class && activeState != fileDocument.getDataComponent()) {
+                    return;
+                }
+
+                if (stateClass == ContextEncoding.class && activeState != fileDocument.getDataComponent()) {
+                    return;
+                }
+
+                statusContextManager.updateActiveState(stateClass, activeState, stateUpdateType);
+            }
+        };
+        contextManager.addChangeListener(contextChangeListener);
+        ContextMonitoringManagement statusUpdateManager = contextModule.createMonitoringManager(statusContextManager);
+        ContextMonitoringRegistration statusContextRegistrator = contextModule.createMonitoringRegistrator(statusUpdateManager, statusContextManager);
+        statusBar = statusBarModule.createStatusBar(BinedComponentModule.BINARY_STATUS_BAR_ID, statusContextRegistrator);
     }
 
-    public void setFileHandler(BinEdFileHandler fileHandler) {
-        this.fileHandler = fileHandler;
-        BinEdComponentPanel componentPanel = fileHandler.getComponent();
-        SectCodeArea codeArea = fileHandler.getCodeArea();
+    public void setDocument(BinaryFileDocument fileDocument) {
+        this.fileDocument = fileDocument;
+        statusContextManager.changeActiveState(ContextDocument.class, fileDocument);
+        statusContextManager.changeActiveState(ContextComponent.class, fileDocument.getDataComponent());
+        statusContextManager.changeActiveState(ContextEncoding.class, fileDocument.getDataComponent());
+        statusContextManager.changeActiveState(ContextSearch.class, fileDocument.getDataComponent().getSearchController().orElse(null));
+
+        BinEdComponentPanel componentPanel = fileDocument.getComponent();
+        SectCodeArea codeArea = (SectCodeArea) fileDocument.getCodeArea();
+
+        SearchModule searchModule = (SearchModule) App.getModule(SearchModuleApi.class);
+        FindReplaceActions findReplaceActions = searchModule.getFindReplaceActions();
+        ActionMap actionMap = codeArea.getActionMap();
+        InputMap inputMap = codeArea.getInputMap();
+        actionMap.put(ACTION_FIND, new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Action editFindAction = findReplaceActions.createEditFindAction();
+                ContextModuleApi contextModule = App.getModule(ContextModuleApi.class);
+                ContextMonitoringRegistration contextRegistrator = contextModule.createMonitoringRegistrator(statusContextManager);
+                contextRegistrator.registerContextMonitoring((ActionContextChange) editFindAction);
+                contextRegistrator.finish();
+                editFindAction.actionPerformed(e);
+            }
+        });
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_DOWN_MASK, false), ACTION_FIND);
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.META_DOWN_MASK, false), ACTION_FIND);
+        actionMap.put(ACTION_REPLACE, new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Action editReplaceAction = findReplaceActions.createEditReplaceAction();
+                ContextModuleApi contextModule = App.getModule(ContextModuleApi.class);
+                ContextMonitoringRegistration contextRegistrator = contextModule.createMonitoringRegistrator(statusContextManager);
+                contextRegistrator.registerContextMonitoring((ActionContextChange) editReplaceAction);
+                contextRegistrator.finish();
+                editReplaceAction.actionPerformed(e);
+            }
+        });
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_H, KeyEvent.CTRL_DOWN_MASK, false), ACTION_REPLACE);
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_H, KeyEvent.META_DOWN_MASK, false), ACTION_REPLACE);
+        actionMap.put(ACTION_UNDO, new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                BinaryDataUndoRedo undoRedo = fileDocument.getUndoHandler().orElse(null);
+                if (undoRedo != null) {
+                    undoRedo.performUndo();
+                }
+            }
+        });
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, KeyEvent.CTRL_DOWN_MASK, false), ACTION_UNDO);
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, KeyEvent.META_DOWN_MASK, false), ACTION_UNDO);
+        actionMap.put(ACTION_REDO, new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                BinaryDataUndoRedo undoRedo = fileDocument.getUndoHandler().orElse(null);
+                if (undoRedo != null) {
+                    undoRedo.performRedo();
+                }
+            }
+        });
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, KeyEvent.SHIFT_DOWN_MASK | KeyEvent.CTRL_DOWN_MASK, false), ACTION_REDO);
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, KeyEvent.SHIFT_DOWN_MASK | KeyEvent.META_DOWN_MASK, false), ACTION_REDO);
+
         toolbarPanel.setTargetComponent(componentPanel);
         toolbarPanel.setCodeAreaControl(new BinEdToolbarPanel.Control() {
-            @Nonnull
             @Override public CodeType getCodeType() {
                 return codeArea.getCodeType();
             }
@@ -97,60 +244,95 @@ public class BinEdFilePanel extends JPanel {
         });
         toolbarPanel.setOnlineHelpAction(createOnlineHelpAction());
 
-        BinedModule binedModule = App.getModule(BinedModule.class);
-        CodeAreaPopupMenuHandler codeAreaPopupMenuHandler =
-                binedModule.createCodeAreaPopupMenuHandler(BinedModule.PopupMenuVariant.EDITOR);
+        FrameModuleApi frameModule = App.getModule(FrameModuleApi.class);
+        BinEdGhidraDocking docking = (BinEdGhidraDocking) frameModule.getFrameStateManager().getActiveState(ContextDocking.class);
+        OptionsSettingsModuleApi optionsSettingsModule = App.getModule(OptionsSettingsModuleApi.class);
+        SettingsAction settingsAction = (SettingsAction) optionsSettingsModule.createSettingsAction();
+        settingsAction.setDialogParentComponent(() -> frameModule.getFrame());
+        AbstractAction wrapperSettingsAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                settingsAction.actionPerformed(e);
+                toolbarPanel.applyFromCodeArea();
+            }
+        };
+        AbstractAction wrapperCompareAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                CompareFilesAction compareFilesAction = new CompareFilesAction();
+                // TODO compareFilesAction.setDialogParentComponent(() -> frameModule.getFrame());
+                // TODO compareFilesAction.setDocumentDocking(docking);
+                compareFilesAction.actionPerformed(e);
+            }
+        };
+        LanguageModuleApi languageModule = App.getModule(LanguageModuleApi.class);
+        java.util.ResourceBundle optionsSettingsResourceBundle = languageModule.getBundle(org.exbin.jaguif.options.settings.OptionsSettingsModule.class);
+        ActionModuleApi actionModule = App.getModule(ActionModuleApi.class);
+        actionModule.initAction(wrapperSettingsAction, optionsSettingsResourceBundle, SettingsAction.ACTION_ID);
+        wrapperSettingsAction.putValue(ActionConsts.ACTION_DIALOG_MODE, true);
+        toolbarPanel.setOptionsAction(wrapperSettingsAction);
+        BinedCompareModule compareModule = App.getModule(BinedCompareModule.class);
+        actionModule.initAction(wrapperCompareAction, compareModule.getResourceBundle(), CompareFilesAction.ACTION_ID);
+        wrapperCompareAction.putValue(ActionConsts.ACTION_DIALOG_MODE, true);
+
+        BinedComponentModule binedComponentModule = App.getModule(BinedComponentModule.class);
         codeArea.setComponentPopupMenu(new JPopupMenu() {
             @Override
             public void show(Component invoker, int x, int y) {
                 String popupMenuId = "BinEdFilePanel.popup";
-                JPopupMenu popupMenu = codeAreaPopupMenuHandler.createPopupMenu(codeArea, popupMenuId, x, y);
-                popupMenu.addPopupMenuListener(new PopupMenuListener() {
-                    @Override
-                    public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-                    }
+                int clickedX = x;
+                int clickedY = y;
+                if (invoker instanceof JViewport) {
+                    clickedX += invoker.getParent().getX();
+                    clickedY += invoker.getParent().getY();
+                }
 
-                    @Override
-                    public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-                        codeAreaPopupMenuHandler.dropPopupMenu(popupMenuId);
-                    }
+                docking.setActiveDocument(fileDocument);
 
-                    @Override
-                    public void popupMenuCanceled(PopupMenuEvent e) {
-                    }
-                });
+                // TODO Temporary workaround for unfinished rework of actions
+                {
+                    ContextModuleApi contextModule = App.getModule(ContextModuleApi.class);
+                    ContextStateManagement contextManagement = new ContextStateManager();
+                    ContextMonitoringManagement updateManagement = contextModule.createMonitoringManager(contextManagement);
+                    contextManagement.changeActiveState(ContextComponent.class, fileDocument.getDataComponent());
+                    contextManagement.changeActiveState(DialogParentComponent.class, () -> frameModule.getFrame());
+
+                    BinedBookmarksModule binedBookmarksModule = App.getModule(BinedBookmarksModule.class);
+                    AbstractAction manageBookmarksAction = binedBookmarksModule.getManageBookmarksAction();
+                    ContextMonitoringRegistration contextRegistrar = contextModule.createMonitoringRegistrator(updateManagement, contextManagement);
+                    contextRegistrar.registerContextMonitoring((ContextChange) manageBookmarksAction.getValue(ActionConsts.ACTION_CONTEXT_CHANGE));
+
+                    BinedMacroModule binedMacroModule = App.getModule(BinedMacroModule.class);
+                    // ContextMonitoringManagement updateManagement = frameModule.getFrameMonitoringManager();
+                    contextRegistrar.registerContextMonitoring((ContextChange) binedMacroModule.getMacroManager().getMacrosMenu().getAction().getValue(ActionConsts.ACTION_CONTEXT_CHANGE));
+                    contextRegistrar.finish();
+                }
+
+                JPopupMenu popupMenu = binedComponentModule.createBinaryDocumentPopupMenu(codeArea, clickedX, clickedY);
+//                ActionUtils.replaceAction(popupMenu, SettingsAction.ACTION_ID + "Action", wrapperSettingsAction);
+//                ActionUtils.replaceAction(popupMenu, CompareFilesAction.ACTION_ID + "Action", wrapperCompareAction);
                 popupMenu.show(invoker, x, y);
             }
         });
 
-        OptionsModuleApi optionsModule = App.getModule(OptionsModuleApi.class);
-        toolbarPanel.setOptionsAction(optionsModule.createOptionsAction());
+        docking.addDocument(fileDocument, statusBar);
+        docking.setActiveDocument(fileDocument);
 
-        BinEdFileManager fileManager = binedModule.getFileManager();
-        statusPanel = fileManager.getBinaryStatusPanel();
-        add(statusPanel, BorderLayout.SOUTH);
+        add(statusBar.getComponent(), BorderLayout.SOUTH);
 
         add(componentPanel, BorderLayout.CENTER);
         revalidate();
         repaint();
     }
 
-    @Nonnull
     public BinEdToolbarPanel getToolbarPanel() {
         return toolbarPanel;
     }
 
-    @Nonnull
-    public BinaryStatusPanel getStatusPanel() {
-        return statusPanel;
-    }
-
-    @Nonnull
     public SectCodeArea getCodeArea() {
-        return fileHandler.getCodeArea();
+        return (SectCodeArea) fileDocument.getCodeArea();
     }
 
-    @Nonnull
     private AbstractAction createOnlineHelpAction() {
         return new AbstractAction() {
             @Override

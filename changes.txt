@@ -1,5 +1,10 @@
 0.2.2
 - Library update
+- Added copy as / paste from dialogs
+- Added copy/paste formats for C, Java and Python
+- Added convert data: date time and compression
+- Added search progress bar
+- Added basic regex search support
 
 0.2.1 (2024-11-06)
 - Library update

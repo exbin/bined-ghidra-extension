@@ -132,6 +132,16 @@ public class MemoryByteBlock implements ByteBlock {
 		}
 	}
 
+    public int getBytes(byte[] bytes, BigInteger index, int count) throws ByteBlockAccessException {
+		Address addr = getAddress(index);
+		try {
+			return memory.getBytes(addr, bytes, 0, count);
+		}
+		catch (MemoryAccessException e) {
+			throw new ByteBlockAccessException(e.getMessage());
+		}
+    }
+
 	@Override
 	public boolean hasValue(BigInteger index) {
 		Address addr = getAddress(index);

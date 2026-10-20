@@ -18,18 +18,15 @@ package org.exbin.bined.ghidra.main;
 import ghidra.framework.options.SaveState;
 import java.util.Objects;
 import java.util.Optional;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
-import org.exbin.framework.preferences.api.Preferences;
+import org.jspecify.annotations.NullMarked;
+import org.exbin.jaguif.options.api.OptionsStorage;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Wrapper for preferences.
- *
- * @author ExBin Project (https://exbin.org)
  */
-@ParametersAreNonnullByDefault
-public class BinEdPreferencesWrapper implements Preferences {
+@NullMarked
+public class BinEdPreferencesWrapper implements OptionsStorage {
 
     private SaveState saveState;
 
@@ -42,13 +39,11 @@ public class BinEdPreferencesWrapper implements Preferences {
         return saveState.hasValue(key);
     }
 
-    @Nonnull
     @Override
     public Optional<String> get(String key) {
         return exists(key) ? Optional.ofNullable(saveState.getString(key, null)) : Optional.empty();
     }
 
-    @Nonnull
     @Override
     public String get(String key, String def) {
         return saveState.getString(key, Objects.requireNonNull(def));
