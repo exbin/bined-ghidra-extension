@@ -121,7 +121,7 @@ repositories {
     mavenCentral()
     mavenLocal()
     flatDir {
-        dirs "lib"
+        dirs("lib", "plugins")
     }
 }
 
@@ -237,6 +237,18 @@ dependencies {
     implementation auxLibrary('binary_data-array')
     implementation auxLibrary('binary_data-delta')
     implementation auxLibrary('component-dropdownbutton')
+    implementation(":jaguif-language-cs_CZ-0.3.0-SNAPSHOT")
+    implementation(":jaguif-language-de_DE-0.3.0-SNAPSHOT")
+    implementation(":jaguif-language-es_ES-0.3.0-SNAPSHOT")
+    implementation(":jaguif-language-fr_FR-0.3.0-SNAPSHOT")
+    implementation(":jaguif-language-it_IT-0.3.0-SNAPSHOT")
+    implementation(":jaguif-language-ja_JP-0.3.0-SNAPSHOT")
+    implementation(":jaguif-language-ko_KR-0.3.0-SNAPSHOT")
+    implementation(":jaguif-language-pl_PL-0.3.0-SNAPSHOT")
+    implementation(":jaguif-language-ru_RU-0.3.0-SNAPSHOT")
+    implementation(":jaguif-language-zh_Hans-0.3.0-SNAPSHOT")
+    implementation(":jaguif-language-zh_Hant-0.3.0-SNAPSHOT")
+    implementation(":jaguif-iconset-material-0.3.0-SNAPSHOT")
 
     compileOnly group: 'org.jspecify', name: 'jspecify', version: '1.0.0'
 //    implementation group: 'org.bouncycastle', name: 'bcprov-jdk18on', version: '1.80'

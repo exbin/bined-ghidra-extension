@@ -73,8 +73,11 @@ import java.awt.event.ActionEvent;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -112,6 +115,7 @@ import org.exbin.jaguif.document.api.DocumentModuleApi;
 import org.exbin.jaguif.help.HelpModule;
 import org.exbin.jaguif.help.api.HelpModuleApi;
 import org.exbin.jaguif.help.online.action.OnlineHelpAction;
+import org.exbin.jaguif.language.api.LanguageProvider;
 import org.exbin.jaguif.license.LicenseModule;
 import org.exbin.jaguif.license.action.AboutAction;
 import org.exbin.jaguif.license.api.LicenseModuleApi;
@@ -127,6 +131,18 @@ import org.exbin.jaguif.options.settings.api.OptionsSettingsModuleApi;
 import org.exbin.jaguif.options.settings.api.SettingsPageContribution;
 import org.exbin.jaguif.options.settings.api.SettingsPanelType;
 import org.exbin.jaguif.options.settings.contribution.SettingsContribution;
+import org.exbin.jaguif.plugin.language.cs_CZ.LanguageCsCzModule;
+import org.exbin.jaguif.plugin.language.de_DE.LanguageDeDeModule;
+import org.exbin.jaguif.plugin.language.es_ES.LanguageEsEsModule;
+import org.exbin.jaguif.plugin.language.fr_FR.LanguageFrFrModule;
+import org.exbin.jaguif.plugin.language.it_IT.LanguageItItModule;
+import org.exbin.jaguif.plugin.language.ja_JP.LanguageJaJpModule;
+import org.exbin.jaguif.plugin.language.ko_KR.LanguageKoKrModule;
+import org.exbin.jaguif.plugin.language.pl_PL.LanguagePlPlModule;
+import org.exbin.jaguif.plugin.language.ru_RU.LanguageRuRuModule;
+import org.exbin.jaguif.plugin.language.zh_Hans.LanguageZhHansModule;
+import org.exbin.jaguif.plugin.language.zh_Hant.LanguageZhHantModule;
+import org.exbin.jaguif.plugins.iconset.material.IconSetMaterialModule;
 import org.exbin.jaguif.search.SearchModule;
 import org.exbin.jaguif.search.api.SearchModuleApi;
 import org.exbin.jaguif.statusbar.StatusBarModule;
@@ -258,6 +274,44 @@ public class BinedExtensionPlugin extends AbstractByteViewerPlugin<ProgramByteVi
         }
     }
 
+    public static void applyIntegrationOptions(IntegrationOptions integrationOptions) {
+        LanguageModuleApi languageModule = App.getModule(LanguageModuleApi.class);
+        Locale languageLocale = integrationOptions.getLanguageLocale();
+        if (languageLocale.equals(Locale.ROOT)) {
+            // Try to match to IDE locale
+            Locale ideLocale = Locale.getDefault(); // TODO
+            List<Locale> locales = new ArrayList<>();
+            for (LanguageProvider languagePlugin : languageModule.getLanguagePlugins()) {
+                locales.add(languagePlugin.getLocale());
+            }
+            List<Locale.LanguageRange> localeRange = new ArrayList<>();
+            String languageTag = ideLocale.toLanguageTag();
+            if ("zh-CN".equals(languageTag)) {
+                // TODO detect match to zh_Hans somehow
+                languageTag = "zh";
+            }
+            localeRange.add(new Locale.LanguageRange(languageTag));
+            List<Locale> match = Locale.filter(localeRange, locales);
+            if (!match.isEmpty()) {
+                Locale firstMatchLlocale = match.get(0);
+                languageModule.switchToLanguage(firstMatchLlocale);
+            } else {
+                languageModule.switchToLanguage(Locale.US);
+            }
+        } else {
+            languageModule.switchToLanguage(languageLocale);
+        }
+
+        String iconSet = integrationOptions.getIconSet();
+        if (!iconSet.isEmpty()) {
+            languageModule.switchToIconSet(iconSet);
+        }
+
+//        for (IntegrationOptionsListener listener : INTEGRATION_OPTIONS_LISTENERS) {
+//            listener.integrationInit(integrationOptions);
+//        }
+    }
+
     @NullMarked
     private static class AppModuleProvider implements ModuleProvider {
 
@@ -306,6 +360,22 @@ public class BinedExtensionPlugin extends AbstractByteViewerPlugin<ProgramByteVi
             modules.put(BinedInspectorModule.class, new BinedInspectorModule());
             modules.put(BinedBookmarksModule.class, new BinedBookmarksModule());
             modules.put(BinedMacroModule.class, new BinedMacroModule());
+
+            // Language plugins
+            modules.put(LanguageCsCzModule.class, new LanguageCsCzModule());
+            modules.put(LanguageDeDeModule.class, new LanguageDeDeModule());
+            modules.put(LanguageEsEsModule.class, new LanguageEsEsModule());
+            modules.put(LanguageFrFrModule.class, new LanguageFrFrModule());
+            modules.put(LanguageItItModule.class, new LanguageItItModule());
+            modules.put(LanguageJaJpModule.class, new LanguageJaJpModule());
+            modules.put(LanguageKoKrModule.class, new LanguageKoKrModule());
+            modules.put(LanguagePlPlModule.class, new LanguagePlPlModule());
+            modules.put(LanguageRuRuModule.class, new LanguageRuRuModule());
+            modules.put(LanguageZhHansModule.class, new LanguageZhHansModule());
+            modules.put(LanguageZhHantModule.class, new LanguageZhHantModule());
+
+            // Iconset plugins
+            modules.put(IconSetMaterialModule.class, new IconSetMaterialModule());
         }
 
         private void init() {

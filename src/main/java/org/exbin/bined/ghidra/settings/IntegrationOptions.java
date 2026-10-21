@@ -15,6 +15,7 @@
  */
 package org.exbin.bined.ghidra.settings;
 
+import java.util.Locale;
 import org.jspecify.annotations.NullMarked;
 import org.exbin.jaguif.options.api.OptionsStorage;
 import org.exbin.jaguif.options.settings.api.SettingsOptions;
@@ -25,6 +26,11 @@ import org.exbin.jaguif.options.settings.api.SettingsOptions;
 @NullMarked
 public class IntegrationOptions implements SettingsOptions {
 
+    public static final String PREFERENCES_LOCALE_LANGUAGE = "locale.language";
+    public static final String PREFERENCES_LOCALE_COUNTRY = "locale.country";
+    public static final String PREFERENCES_LOCALE_VARIANT = "locale.variant";
+    public static final String PREFERENCES_LOCALE_TAG = "locale.tag";
+    public static final String PREFERENCES_ICONSET = "iconset";
     public static final String PREFERENCES_REGISTER_FILE_MENU_OPEN_AS_BINARY = "registerFileMenuOpenAsBinary";
     public static final String PREFERENCES_REGISTER_OPEN_FILE_AS_BINARY_VIA_TOOLBAR = "registerOpenFileAsBinaryViaToolbar";
     public static final String PREFERENCES_REGISTER_CONTEXT_OPEN_AS_BINARY = "registerContextOpenAsBinary";
@@ -33,12 +39,83 @@ public class IntegrationOptions implements SettingsOptions {
     public static final String PREFERENCES_REGISTER_DEBUG_VIEW_AS_BINARY = "registerDebugVariablesAsBinary";
     public static final String PREFERENCES_REGISTER_BYTE_TO_BYTE_DIFF_TOOL = "registerByteToByteDiffTool";
 
-    public static final String PREFERENCES_REGISTER_EDIT_AS_BINARY_FOR_DB_COLUMN = "registerEditAsBinaryForDbColumn";
-
     private final OptionsStorage storage;
 
     public IntegrationOptions(OptionsStorage storage) {
         this.storage = storage;
+    }
+
+    public String getLocaleLanguage() {
+        return storage.get(PREFERENCES_LOCALE_LANGUAGE, "");
+    }
+
+    public String getLocaleCountry() {
+        return storage.get(PREFERENCES_LOCALE_COUNTRY, "");
+    }
+
+    public String getLocaleVariant() {
+        return storage.get(PREFERENCES_LOCALE_VARIANT, "");
+    }
+
+    public String getLocaleTag() {
+        return storage.get(PREFERENCES_LOCALE_TAG, "");
+    }
+
+    public Locale getLanguageLocale() {
+        String localeTag = getLocaleTag();
+        if (!localeTag.trim().isEmpty()) {
+            try {
+                return Locale.forLanguageTag(localeTag);
+            } catch (SecurityException ex) {
+                // Ignore it in java webstart
+            }
+        }
+
+        String localeLanguage = getLocaleLanguage();
+        String localeCountry = getLocaleCountry();
+        String localeVariant = getLocaleVariant();
+        try {
+            Locale.Builder builder = new Locale.Builder();
+            builder.setLanguage(localeLanguage);
+            builder.setRegion(localeCountry);
+            builder.setVariant(localeVariant);
+            return builder.build();
+        } catch (SecurityException ex) {
+            // Ignore it in java webstart
+        }
+
+        return Locale.ROOT;
+    }
+
+    public void setLocaleLanguage(String language) {
+        storage.put(PREFERENCES_LOCALE_LANGUAGE, language);
+    }
+
+    public void setLocaleCountry(String country) {
+        storage.put(PREFERENCES_LOCALE_COUNTRY, country);
+    }
+
+    public void setLocaleVariant(String variant) {
+        storage.put(PREFERENCES_LOCALE_VARIANT, variant);
+    }
+
+    public void setLocaleTag(String variant) {
+        storage.put(PREFERENCES_LOCALE_TAG, variant);
+    }
+
+    public void setLanguageLocale(Locale locale) {
+        setLocaleTag(locale.toLanguageTag());
+        setLocaleLanguage(locale.getLanguage());
+        setLocaleCountry(locale.getCountry());
+        setLocaleVariant(locale.getVariant());
+    }
+
+    public String getIconSet() {
+        return storage.get(PREFERENCES_ICONSET, "");
+    }
+
+    public void setIconSet(String iconSet) {
+        storage.put(PREFERENCES_ICONSET, iconSet);
     }
 
     public boolean isRegisterFileMenuOpenAsBinary() {
@@ -97,17 +174,11 @@ public class IntegrationOptions implements SettingsOptions {
         storage.putBoolean(PREFERENCES_REGISTER_BYTE_TO_BYTE_DIFF_TOOL, registerByteToByteDiffTool);
     }
 
-    public boolean isRegisterEditAsBinaryForDbColumn() {
-        return storage.getBoolean(PREFERENCES_REGISTER_EDIT_AS_BINARY_FOR_DB_COLUMN, true);
-    }
-
-    public void setRegisterEditAsBinaryForDbColumn(boolean registerEditAsBinaryForDbColumn) {
-        storage.putBoolean(PREFERENCES_REGISTER_EDIT_AS_BINARY_FOR_DB_COLUMN, registerEditAsBinaryForDbColumn);
-    }
-
     @Override
     public void copyTo(SettingsOptions options) {
         IntegrationOptions with = (IntegrationOptions) options;
+        with.setLanguageLocale(getLanguageLocale());
+        with.setIconSet(getIconSet());
         with.setRegisterFileMenuOpenAsBinary(isRegisterFileMenuOpenAsBinary());
         with.setRegisterOpenFileAsBinaryViaToolbar(isRegisterOpenFileAsBinaryViaToolbar());
         with.setRegisterContextOpenAsBinary(isRegisterContextOpenAsBinary());
@@ -115,6 +186,5 @@ public class IntegrationOptions implements SettingsOptions {
         with.setRegisterBinaryMultiview(isRegisterBinaryMultiview());
         with.setRegisterDebugViewAsBinary(isRegisterDebugViewAsBinary());
         with.setRegisterByteToByteDiffTool(isRegisterByteToByteDiffTool());
-        with.setRegisterEditAsBinaryForDbColumn(isRegisterEditAsBinaryForDbColumn());
     }
 }

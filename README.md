@@ -10,6 +10,13 @@ Screenshot
 
 ![BinEd-Editor Screenshot](images/bined-ghidra-screenshot.png?raw=true)
 
+Usage
+-----
+
+  * Install extension via File/Install extensions
+  * Create new tool via Tools/Create Tools and select BinedExtensionPlugin in Core plugins
+  * Start tool and press display bined icon in tool bar
+
 Features
 --------
 

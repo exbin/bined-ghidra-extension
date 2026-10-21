@@ -43,7 +43,7 @@ public class IntegrationSettingsComponent implements SettingsComponentProvider {
     @Override
     public SettingsComponent createComponent() {
         IntegrationSettingsPanel panel = new IntegrationSettingsPanel();
-        /*ResourceBundle resourceBundle = App.getModule(LanguageModuleApi.class).getBundle(
+        ResourceBundle resourceBundle = App.getModule(LanguageModuleApi.class).getBundle(
                 LanguageSettingsPanel.class);
         panel.setDefaultLocaleName("<" + resourceBundle.getString("locale.defaultLanguage") + ">");
         List<LanguageRecord> languageLocales = new ArrayList<>();
@@ -71,7 +71,7 @@ public class IntegrationSettingsComponent implements SettingsComponentProvider {
         }
 
         panel.setLanguageLocales(languageLocales);
-        panel.setIconSets(iconSets, iconSetNames); */
+        panel.setIconSets(iconSets, iconSetNames);
         return panel;
     }
 }

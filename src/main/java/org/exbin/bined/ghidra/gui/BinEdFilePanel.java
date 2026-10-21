@@ -41,8 +41,6 @@ import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import org.exbin.bined.ghidra.main.BinEdGhidraDocking;
 import org.exbin.bined.jaguif.bookmarks.BinedBookmarksModule;
-import org.exbin.bined.jaguif.compare.BinedCompareModule;
-import org.exbin.bined.jaguif.compare.action.CompareFilesAction;
 import org.exbin.bined.jaguif.component.BinedComponentModule;
 import org.exbin.bined.jaguif.document.BinaryFileDocument;
 import org.exbin.bined.jaguif.macro.BinedMacroModule;
@@ -193,7 +191,7 @@ public class BinEdFilePanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 BinaryDataUndoRedo undoRedo = fileDocument.getUndoHandler().orElse(null);
-                if (undoRedo != null) {
+                if (undoRedo != null && undoRedo.canUndo()) {
                     undoRedo.performUndo();
                 }
             }
@@ -204,7 +202,7 @@ public class BinEdFilePanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 BinaryDataUndoRedo undoRedo = fileDocument.getUndoHandler().orElse(null);
-                if (undoRedo != null) {
+                if (undoRedo != null && undoRedo.canRedo()) {
                     undoRedo.performRedo();
                 }
             }
@@ -256,24 +254,12 @@ public class BinEdFilePanel extends JPanel {
                 toolbarPanel.applyFromCodeArea();
             }
         };
-        AbstractAction wrapperCompareAction = new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                CompareFilesAction compareFilesAction = new CompareFilesAction();
-                // TODO compareFilesAction.setDialogParentComponent(() -> frameModule.getFrame());
-                // TODO compareFilesAction.setDocumentDocking(docking);
-                compareFilesAction.actionPerformed(e);
-            }
-        };
         LanguageModuleApi languageModule = App.getModule(LanguageModuleApi.class);
         java.util.ResourceBundle optionsSettingsResourceBundle = languageModule.getBundle(org.exbin.jaguif.options.settings.OptionsSettingsModule.class);
         ActionModuleApi actionModule = App.getModule(ActionModuleApi.class);
         actionModule.initAction(wrapperSettingsAction, optionsSettingsResourceBundle, SettingsAction.ACTION_ID);
         wrapperSettingsAction.putValue(ActionConsts.ACTION_DIALOG_MODE, true);
         toolbarPanel.setOptionsAction(wrapperSettingsAction);
-        BinedCompareModule compareModule = App.getModule(BinedCompareModule.class);
-        actionModule.initAction(wrapperCompareAction, compareModule.getResourceBundle(), CompareFilesAction.ACTION_ID);
-        wrapperCompareAction.putValue(ActionConsts.ACTION_DIALOG_MODE, true);
 
         BinedComponentModule binedComponentModule = App.getModule(BinedComponentModule.class);
         codeArea.setComponentPopupMenu(new JPopupMenu() {
@@ -310,7 +296,6 @@ public class BinEdFilePanel extends JPanel {
 
                 JPopupMenu popupMenu = binedComponentModule.createBinaryDocumentPopupMenu(codeArea, clickedX, clickedY);
 //                ActionUtils.replaceAction(popupMenu, SettingsAction.ACTION_ID + "Action", wrapperSettingsAction);
-//                ActionUtils.replaceAction(popupMenu, CompareFilesAction.ACTION_ID + "Action", wrapperCompareAction);
                 popupMenu.show(invoker, x, y);
             }
         });
