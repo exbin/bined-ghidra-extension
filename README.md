@@ -13,7 +13,7 @@ Screenshot
 Usage
 -----
 
-  * Install extension via File/Install extensions
+  * Install extension via File/Install Extensions
   * Create new tool via Tools/Create Tools and select BinedExtensionPlugin in Core plugins
   * Start tool and press display bined icon in tool bar
 

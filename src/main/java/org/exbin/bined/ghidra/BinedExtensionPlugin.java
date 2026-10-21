@@ -388,6 +388,19 @@ public class BinedExtensionPlugin extends AbstractByteViewerPlugin<ProgramByteVi
             App.setAppBundle(bundle);
             languageModule.setAppBundle(bundle);
 
+            App.getModule(LanguageCsCzModule.class).register();
+            App.getModule(LanguageDeDeModule.class).register();
+            App.getModule(LanguageEsEsModule.class).register();
+            App.getModule(LanguageFrFrModule.class).register();
+            App.getModule(LanguageItItModule.class).register();
+            App.getModule(LanguageJaJpModule.class).register();
+            App.getModule(LanguageKoKrModule.class).register();
+            App.getModule(LanguagePlPlModule.class).register();
+            App.getModule(LanguageRuRuModule.class).register();
+            App.getModule(LanguageZhHansModule.class).register();
+            App.getModule(LanguageZhHantModule.class).register();
+            App.getModule(IconSetMaterialModule.class).register();
+
             BinedBookmarksModule binedBookmarksModule = App.getModule(BinedBookmarksModule.class);
             binedBookmarksModule.register();
             BinedMacroModule binedMacroModule = App.getModule(BinedMacroModule.class);
