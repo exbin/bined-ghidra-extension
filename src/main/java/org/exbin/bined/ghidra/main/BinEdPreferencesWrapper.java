@@ -28,7 +28,7 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public class BinEdPreferencesWrapper implements OptionsStorage {
 
-    private SaveState saveState;
+    protected final SaveState saveState;
 
     public BinEdPreferencesWrapper(SaveState saveState) {
         this.saveState = saveState;

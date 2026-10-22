@@ -61,6 +61,7 @@ import org.exbin.jaguif.context.api.StateUpdateType;
 import org.exbin.jaguif.docking.api.ContextDocking;
 import org.exbin.jaguif.document.api.ContextDocument;
 import org.exbin.jaguif.frame.api.FrameModuleApi;
+import org.exbin.jaguif.help.online.HelpOnlineModule;
 import org.exbin.jaguif.options.settings.action.SettingsAction;
 import org.exbin.jaguif.options.settings.api.OptionsSettingsModuleApi;
 import org.exbin.jaguif.search.SearchModule;
@@ -83,7 +84,7 @@ public class BinEdFilePanel extends JPanel {
     public static final String ACTION_UNDO = "undo";
     public static final String ACTION_REDO = "redo";
 
-    protected BinaryFileDocument fileDocument;
+    protected @Nullable BinaryFileDocument fileDocument;
     protected BinEdToolbarPanel toolbarPanel = new BinEdToolbarPanel();
     protected ContextStateManagement statusContextManager;
     protected ContextChangeListener contextChangeListener;
@@ -240,7 +241,8 @@ public class BinEdFilePanel extends JPanel {
                 codeArea.repaint();
             }
         });
-        toolbarPanel.setOnlineHelpAction(createOnlineHelpAction());
+        HelpOnlineModule helpOnlineModule = App.getModule(HelpOnlineModule.class);
+        toolbarPanel.setOnlineHelpAction(helpOnlineModule.createOnlineHelpAction());
 
         FrameModuleApi frameModule = App.getModule(FrameModuleApi.class);
         BinEdGhidraDocking docking = (BinEdGhidraDocking) frameModule.getFrameStateManager().getActiveState(ContextDocking.class);
@@ -316,15 +318,5 @@ public class BinEdFilePanel extends JPanel {
 
     public SectCodeArea getCodeArea() {
         return (SectCodeArea) fileDocument.getCodeArea();
-    }
-
-    private AbstractAction createOnlineHelpAction() {
-        return new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                LanguageModuleApi languageModuleApi = App.getModule(LanguageModuleApi.class);
-                DesktopUtils.openDesktopURL(languageModuleApi.getAppBundle().getString("online_help_url"));
-            }
-        };
     }
 }

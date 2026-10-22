@@ -230,7 +230,6 @@ public abstract class AbstractByteViewerPlugin<P extends ProgramByteViewerCompon
 
 	@Override
 	public void restoreTransientState(Object objectState) {
-
 		doWithEventsDisabled(() -> {
 			Object[] state = (Object[]) objectState;
 			connectedProvider.restoreLocation((SaveState) state[0]);
@@ -279,8 +278,7 @@ public abstract class AbstractByteViewerPlugin<P extends ProgramByteViewerCompon
 	public void closeProvider(BinEdComponentProvider provider) {
 		if (provider == connectedProvider) {
 			tool.showComponentProvider(provider, false);
-		}
-		else {
+		} else {
 			disconnectedProviders.remove(provider);
 			removeProvider(provider);
 		}

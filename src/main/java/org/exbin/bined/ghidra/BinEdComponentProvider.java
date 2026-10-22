@@ -50,7 +50,6 @@ import org.exbin.jaguif.options.api.OptionsModuleApi;
 import javax.swing.JComponent;
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.event.MouseEvent;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
