@@ -201,7 +201,6 @@ public abstract class AbstractByteViewerPlugin<P extends ProgramByteViewerCompon
 		for (P provider : disconnectedProviders) {
 			restoreUndoRedoState(stateMap, domainObject, provider);
 		}
-
 	}
 
 	private void restoreUndoRedoState(Map<Long, Object> stateMap, DomainObject domainObject,
@@ -241,8 +240,7 @@ public abstract class AbstractByteViewerPlugin<P extends ProgramByteViewerCompon
 		areEventsDisabled = true;
 		try {
 			callback.call();
-		}
-		finally {
+		} finally {
 			areEventsDisabled = false;
 		}
 	}

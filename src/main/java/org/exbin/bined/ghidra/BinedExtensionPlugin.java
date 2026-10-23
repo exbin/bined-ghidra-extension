@@ -401,6 +401,8 @@ public class BinedExtensionPlugin extends AbstractByteViewerPlugin<ProgramByteVi
             App.getModule(LanguageZhHantModule.class).register();
             App.getModule(IconSetMaterialModule.class).register();
 
+            applyIntegrationOptions(new IntegrationOptions(optionsModule.getAppOptions()));
+
             BinedBookmarksModule binedBookmarksModule = App.getModule(BinedBookmarksModule.class);
             binedBookmarksModule.register();
             BinedMacroModule binedMacroModule = App.getModule(BinedMacroModule.class);

@@ -11,7 +11,7 @@ plugins {
     id 'distribution'
 }
 
-version = '0.2.2-SNAPSHOT'
+version = '0.2.2'
 
 java {
     sourceCompatibility = '21'
@@ -261,7 +261,7 @@ jar {
     manifest {
         attributes(
             'Specification-Title': "BinedExtension",
-            'Specification-Version': "11.2",
+            'Specification-Version': "12.1.4",
             'Main-Class': mainClass
         )
     }

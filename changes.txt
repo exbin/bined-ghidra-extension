@@ -1,4 +1,4 @@
-0.2.2
+0.2.2 (2026-10-23)
 - Library update
 - Added copy as / paste from dialogs
 - Added convert data: date time and compression

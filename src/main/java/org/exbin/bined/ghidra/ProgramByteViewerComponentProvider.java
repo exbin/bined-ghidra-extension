@@ -50,19 +50,25 @@ import ghidra.util.datastruct.WeakSet;
 import java.awt.Frame;
 import java.awt.Window;
 import java.io.File;
+import java.util.Optional;
+import org.exbin.bined.EditMode;
+import org.exbin.bined.capability.EditModeCapable;
 import org.exbin.bined.ghidra.main.BinEdGhidraDocking;
 import org.exbin.bined.jaguif.document.BinaryFileDocument;
+import org.exbin.bined.swing.CodeAreaCore;
 
 import org.exbin.jaguif.App;
 import org.exbin.jaguif.context.api.ContextStateManagement;
 import org.exbin.jaguif.docking.api.ContextDocking;
 import org.exbin.jaguif.document.api.ContextDocument;
+import org.exbin.jaguif.document.api.Document;
 import org.exbin.jaguif.file.api.FileDocumentSource;
 import org.exbin.jaguif.frame.api.FrameModuleApi;
 
 public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 		implements DomainObjectListener, Navigatable {
 
+//    private static boolean externalFrameInitialized = false;
 	private ImageIcon navigatableIcon;
 
 	protected DecoratorPanel decorationComponent;
@@ -779,7 +785,7 @@ public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
 	}
 
 	private class OpenExternalAction extends DockingAction {
-
+        
 		public OpenExternalAction() {
 			super("Open External", plugin.getName());
 			Icon image = new GIcon("icon.plugin.binedextension.open");
@@ -795,11 +801,23 @@ public class ProgramByteViewerComponentProvider extends BinEdComponentProvider
             int dialogResult = fileChooser.showOpenDialog(frameModule.getFrame());
             if (dialogResult == JFileChooser.APPROVE_OPTION) {
                 File file = fileChooser.getSelectedFile();
-                BinaryFileDocument fileDocument = new BinaryFileDocument();
-                fileDocument.loadFrom(new FileDocumentSource(file));
+                /* Frame frame = frameModule.getFrame();
+                FrameController frameController = frameModule.getFrameController();
+                if (!externalFrameInitialized) {
+                    externalFrameInitialized = true;
+                    ((JFrame) frame).setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                    frameController.loadMainMenu();
+                    frameController.loadMainToolBar();
+                    frameController.setDefaultSize(new Dimension(600, 400));
+                }
+                frameController.showFrame(); */
                 ContextStateManagement contextManager = frameModule.getFrameStateManager();
                 BinEdGhidraDocking docking = (BinEdGhidraDocking) contextManager.getActiveState(ContextDocking.class);
-                docking.setActiveDocument(fileDocument);
+                Optional<Document> activeDocument = docking.getActiveDocument();
+                BinaryFileDocument fileDocument = (BinaryFileDocument) activeDocument.get();
+                fileDocument.loadFrom(new FileDocumentSource(file));
+                CodeAreaCore codeArea = fileDocument.getCodeArea();
+                ((EditModeCapable) codeArea).setEditMode(EditMode.EXPANDING);
                 fileDocument.fileSync();
                 contextManager.updateActiveState(ContextDocument.class, fileDocument, BinaryFileDocument.UpdateType.ORIGINAL_SIZE);
                 contextManager.updateActiveState(ContextDocument.class, fileDocument, BinaryFileDocument.UpdateType.PROCESSING_MODE);
